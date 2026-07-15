@@ -383,7 +383,7 @@ async function pushCloud(r) {
       body: JSON.stringify(payload)
     });
     if (res.ok) setStatus('Saved ✓');
-    else setStatus('Save failed — will retry', true);
+    else { const err = await res.text(); console.error('Save error:', res.status, err); setStatus('Save failed — will retry', true); }
   } catch (e) { setStatus('Offline — saved on device', true); }
 }
 
