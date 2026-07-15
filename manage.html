@@ -119,8 +119,8 @@ var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
 var AUTH_BASE = 'https://www.kennecotttrainers.com';
 var TOKEN = localStorage.getItem('kt_token') || '';
 
-var STATUSES = ['all','reported','inspected','repaired','closed','draft'];
-var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported', inspected:'Inspected', repaired:'Repaired', closed:'Closed' };
+var STATUSES = ['all','reported','repaired','closed','draft'];
+var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported', repaired:'Repaired', closed:'Closed' };
 
 var reports = [];
 var cur = null;
@@ -238,8 +238,7 @@ function renderDetail() {
     field('Cable ID', r.cable_id) + field('Report Date', fmtDate(r.report_date)) +
     field('Date & Time Occurred', r.occurrence_datetime ? fmtDateTime(r.occurrence_datetime) : null) +
     field('Damage Type', r.damage_type) + field('Location', r.location) +
-    field('Description', r.description, true) + field('Probable Cause', r.cause, true) +
-    field('Immediate Action', r.immediate_action, true) +
+    field('Description', r.description, true) +
     '</div>';
   if (r.photos && r.photos.length) {
     html += '<div class="detail-field full" style="margin-top:14px"><label>Photos (' + r.photos.length + ')</label><div class="photos">' +
@@ -248,21 +247,8 @@ function renderDetail() {
   }
   html += '</div>';
 
-  // Inspection (editable if status allows)
-  var canEditInspect = ['reported','inspected','repaired'].indexOf(r.status) > -1;
-  html += '<div class="detail-card"><div class="detail-title">Inspection</div><div class="detail-grid">';
-  if (canEditInspect) {
-    html += editField('Inspector', 'inspector_name', r.inspector_name) +
-            editField('Inspect Date', 'inspect_date', r.inspect_date, 'date') +
-            '<div class="detail-field full"><label>Inspection Notes</label><textarea oninput="upd(\'inspect_notes\',this.value)">' + esc(r.inspect_notes||'') + '</textarea></div>';
-  } else {
-    html += field('Inspector', r.inspector_name) + field('Inspect Date', fmtDate(r.inspect_date)) +
-            field('Inspection Notes', r.inspect_notes, true);
-  }
-  html += '</div></div>';
-
   // Repair
-  var canEditRepair = ['inspected','repaired'].indexOf(r.status) > -1;
+  var canEditRepair = ['reported','repaired'].indexOf(r.status) > -1;
   html += '<div class="detail-card"><div class="detail-title">Repair</div><div class="detail-grid">';
   if (canEditRepair) {
     html += editField('Repaired By', 'repair_name', r.repair_name) +
@@ -300,8 +286,7 @@ function renderWorkflowBtns() {
   if (!w || !cur) return;
   var s = cur.status;
   var btns = '';
-  if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'inspected\')">Mark Inspected</button>';
-  if (s === 'inspected') btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
+  if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
   if (s === 'repaired')  btns += '<button class="wf-btn primary" onclick="advance(\'closed\')">Close Report</button>';
   w.innerHTML = btns;
 }

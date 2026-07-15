@@ -117,10 +117,10 @@ const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
 const AUTH_BASE = 'https://www.kennecotttrainers.com';
 const TOKEN = localStorage.getItem('kt_token') || '';
 
-const STATUSES = ['draft','reported','inspected','repaired','closed'];
-const STATUS_LABELS = { draft:'Draft', reported:'Reported', inspected:'Inspected', repaired:'Repaired', closed:'Closed' };
-const DAMAGE_TYPES = ['Cut','Crush','Burn','Abrasion','Splice Failure','Ground Fault','Other'];
-const LOCATIONS = ['Pit','Dump','Haul Road','Shop Area','Other'];
+const STATUSES = ['draft','reported','repaired','closed'];
+const STATUS_LABELS = { draft:'Draft', reported:'Reported', repaired:'Repaired', closed:'Closed' };
+const DAMAGE_TYPES = ['Cut','Crush','Splice Failure','Ground Fault','Other'];
+const LOCATIONS = ['Shovel','Drill','Porch Unit'];
 
 let reports = [];
 let cur = null;
@@ -295,14 +295,6 @@ function renderForm() {
           <label>Description of Damage</label>
           <textarea id="f-desc" ${dis} oninput="upd('description',this.value)">${esc(r.description)}</textarea>
         </div>
-        <div class="form-field full">
-          <label>Probable Cause</label>
-          <textarea id="f-cause" style="min-height:60px" ${dis} oninput="upd('cause',this.value)">${esc(r.cause)}</textarea>
-        </div>
-        <div class="form-field full">
-          <label>Immediate Action Taken</label>
-          <textarea id="f-action" style="min-height:60px" ${dis} oninput="upd('immediate_action',this.value)">${esc(r.immediate_action)}</textarea>
-        </div>
       </div>
       <div class="form-field full" style="margin-top:14px">
         <label>Photos</label>
@@ -311,19 +303,7 @@ function renderForm() {
       </div>
     </div>`;
 
-  if (r.status !== 'draft') {
-    html += `
-    <div class="form-card">
-      <div class="form-title">Inspection</div>
-      <div class="form-grid">
-        <div class="form-field"><label>Inspector</label><input id="f-insp" value="${esc(r.inspector_name)}" ${isLocked?'disabled':''} oninput="upd('inspector_name',this.value)"></div>
-        <div class="form-field"><label>Inspect Date</label><input type="date" id="f-inspd" value="${esc(r.inspect_date)}" ${isLocked?'disabled':''} onchange="upd('inspect_date',this.value)"></div>
-        <div class="form-field full"><label>Inspection Notes</label><textarea id="f-inspn" style="min-height:60px" ${isLocked?'disabled':''} oninput="upd('inspect_notes',this.value)">${esc(r.inspect_notes)}</textarea></div>
-      </div>
-    </div>`;
-  }
-
-  if (['inspected','repaired','closed'].includes(r.status)) {
+  if (['reported','repaired','closed'].includes(r.status)) {
     html += `
     <div class="form-card">
       <div class="form-title">Repair</div>
@@ -358,8 +338,7 @@ function renderWorkflowBtns() {
   const s = cur.status;
   let btns = '';
   if (s === 'draft')     btns = `<button class="wf-btn primary" onclick="advanceStatus('reported')">Submit Report</button>`;
-  if (s === 'reported')  btns = `<button class="wf-btn primary" onclick="advanceStatus('inspected')">Mark Inspected</button>`;
-  if (s === 'inspected') btns = `<button class="wf-btn primary" onclick="advanceStatus('repaired')">Mark Repaired</button>`;
+  if (s === 'reported')  btns = `<button class="wf-btn primary" onclick="advanceStatus('repaired')">Mark Repaired</button>`;
   if (s === 'repaired')  btns = `<button class="wf-btn primary" onclick="advanceStatus('closed')">Close Report</button>`;
   if (s !== 'closed')    btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
   w.innerHTML = btns;
