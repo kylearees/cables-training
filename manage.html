@@ -199,7 +199,7 @@ function renderDetail() {
   html += '<div class="detail-card"><div class="detail-title">Report Details</div><div class="detail-grid">' +
     field('Cable ID', r.cable_id) + field('Report Date', fmtDate(r.report_date)) +
     field('Date & Time Occurred', r.occurrence_datetime ? fmtDateTime(r.occurrence_datetime) : null) +
-    field('Damage Type', r.damage_type) + field('Location', r.location) +
+    field('Damage Type', r.damage_type) + field('Equipment Type', r.location) + field('Equipment Number', r.equipment_number) +
     field('Description', r.description, true) +
     '</div>';
   if (r.photos && r.photos.length) {

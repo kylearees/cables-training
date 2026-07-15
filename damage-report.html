@@ -120,7 +120,7 @@ const TOKEN = localStorage.getItem('kt_token') || '';
 const STATUSES = ['draft','reported','repaired','closed'];
 const STATUS_LABELS = { draft:'Draft', reported:'Reported', repaired:'Repaired', closed:'Closed' };
 const DAMAGE_TYPES = ['Cut','Crush','Splice Failure','Ground Fault','Other'];
-const LOCATIONS = ['Shovel','Drill','Porch Unit'];
+const EQUIPMENT_TYPES = ['Shovel','Drill','Porch Unit'];
 
 let reports = [];
 let cur = null;
@@ -181,7 +181,7 @@ function blankReport() {
   const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('dr'+Date.now()+Math.random().toString(16).slice(2));
   return {
     id, status:'draft', reporter_name:userName, reporter_payroll:userPayroll, contact_phone:'',
-    report_date:today, occurrence_datetime:'', cable_id:'', damage_type:'', location:'',
+    report_date:today, occurrence_datetime:'', cable_id:'', damage_type:'', location:'', equipment_number:'',
     description:'', cause:'', immediate_action:'', photos:[], notes:'',
     inspector_name:'', inspect_date:'', inspect_notes:'',
     repair_name:'', repair_date:'', repair_notes:'',
@@ -283,12 +283,16 @@ function renderForm() {
             ${DAMAGE_TYPES.map(t => `<option value="${t}"${r.damage_type===t?' selected':''}>${t}</option>`).join('')}
           </select>
         </div>
-        <div class="form-field full">
-          <label>Location</label>
+        <div class="form-field">
+          <label>Equipment Type</label>
           <select id="f-loc" ${dis} onchange="upd('location',this.value)">
             <option value="">— Select —</option>
-            ${LOCATIONS.map(l => `<option value="${l}"${r.location===l?' selected':''}>${l}</option>`).join('')}
+            ${EQUIPMENT_TYPES.map(l => `<option value="${l}"${r.location===l?' selected':''}>${l}</option>`).join('')}
           </select>
+        </div>
+        <div class="form-field">
+          <label>Equipment Number</label>
+          <input id="f-equip-num" value="${esc(r.equipment_number||'')}" ${dis} oninput="upd('equipment_number',this.value)">
         </div>
         <div class="form-field full">
           <label>Description of Damage</label>
@@ -327,7 +331,7 @@ async function advanceStatus(next) {
       await fetch(SB_URL + '/functions/v1/notify-cable-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SB_KEY },
-        body: JSON.stringify({ report_id: cur.id, cable_id: cur.cable_id, damage_type: cur.damage_type, location: cur.location, reporter_name: cur.reporter_name, report_date: cur.report_date, description: cur.description })
+        body: JSON.stringify({ report_id: cur.id, cable_id: cur.cable_id, damage_type: cur.damage_type, location: cur.location, equipment_number: cur.equipment_number, reporter_name: cur.reporter_name, report_date: cur.report_date, description: cur.description })
       });
     } catch (e) {}
   }
