@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Management — Cables Training</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <script src="/header.js" defer></script>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="theme-color" content="#f5a623">
+  <style>
+    :root { --bg:#0f1117; --surface:#181c27; --card:#1e2333; --border:#2a3050; --accent:#f5a623; --text:#e8ecf4; --muted:#a8b4cc; --error:#ef4444; --green:#22c55e; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
+    header { background:var(--surface); border-bottom:3px solid var(--accent); padding:14px 18px 12px; }
+    .badge { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:3px; }
+    header h1 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
+
+    .layout { display:flex; height:calc(100vh - 56px); overflow:hidden; }
+    .sidebar { width:320px; min-width:260px; background:var(--surface); border-right:1.5px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+    .sidebar-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+    .sidebar-head h2 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+    .sidebar-head .count { font-size:13px; color:var(--muted); margin-top:2px; }
+    .filter-bar { padding:10px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+    .filter-bar input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:9px 12px; outline:none; }
+    .filter-bar input:focus { border-color:var(--accent); }
+    .filter-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+    .ftab { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:5px 10px; border-radius:5px; border:1.5px solid var(--border); background:none; color:var(--muted); cursor:pointer; }
+    .ftab:hover { border-color:var(--muted); }
+    .ftab.active { border-color:var(--accent); color:var(--accent); background:rgba(245,166,35,.08); }
+    .report-list { flex:1; overflow-y:auto; }
+    .report-item { padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+    .report-item:hover { background:var(--card); }
+    .report-item.active { background:var(--card); border-left:3px solid var(--accent); }
+    .ri-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .ri-id { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:.5px; }
+    .ri-status { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+    .ri-status.draft { background:rgba(168,180,204,.15); color:var(--muted); }
+    .ri-status.reported { background:rgba(245,166,35,.15); color:var(--accent); }
+    .ri-status.inspected { background:rgba(59,130,246,.15); color:#3b82f6; }
+    .ri-status.repaired { background:rgba(34,197,94,.15); color:var(--green); }
+    .ri-status.closed { background:rgba(168,180,204,.1); color:var(--muted); }
+    .ri-meta { font-size:13px; color:var(--muted); }
+    .ri-reporter { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .main { flex:1; overflow-y:auto; padding:28px 32px; }
+    .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--muted); text-align:center; gap:12px; }
+    .empty-state .icon { font-size:48px; }
+    .empty-state .msg { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+
+    .detail-card { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+    .detail-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:16px; color:var(--accent); }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+    .detail-field { display:flex; flex-direction:column; gap:3px; }
+    .detail-field.full { grid-column:1/-1; }
+    .detail-field label { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+    .detail-field .val { font-size:15px; line-height:1.5; }
+    .detail-field .val.empty { color:var(--muted); font-style:italic; }
+    .detail-field textarea { background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:10px 12px; outline:none; min-height:60px; resize:vertical; }
+    .detail-field textarea:focus { border-color:var(--accent); }
+    .detail-field input { background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:10px 12px; outline:none; }
+    .detail-field input:focus { border-color:var(--accent); }
+
+    .status-bar { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+    .status-pill { font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:6px; }
+    .workflow-btns { display:flex; gap:8px; margin-left:auto; }
+    .wf-btn { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:8px 16px; border-radius:6px; border:1.5px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; }
+    .wf-btn:hover { border-color:var(--accent); }
+    .wf-btn.primary { background:var(--accent); color:#000; border-color:var(--accent); }
+
+    .photos { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+    .thumb { width:200px; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); }
+    .thumb img { width:200px; height:150px; object-fit:cover; display:block; cursor:pointer; }
+    .photo-lightbox { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; cursor:zoom-out; }
+    .photo-lightbox img { max-width:92vw; max-height:92vh; border-radius:8px; }
+
+    .save-status { font-size:13px; color:var(--muted); padding:4px 0; margin-bottom:12px; }
+    .save-status.err { color:var(--error); }
+
+    @media (max-width:700px) {
+      .layout { flex-direction:column; height:auto; }
+      .sidebar { width:100%; max-height:40vh; border-right:none; border-bottom:1.5px solid var(--border); }
+      .main { padding:20px 16px; }
+      .detail-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="badge">Kennecott Mine · Cables Training</div>
+  <h1>Management</h1>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <h2>Damage Reports</h2>
+      <div class="count" id="listCount"></div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="search" placeholder="Search cable ID, reporter, type…" oninput="renderList()">
+      <div class="filter-tabs" id="statusTabs"></div>
+    </div>
+    <div class="report-list" id="reportList"></div>
+  </div>
+  <div class="main" id="main">
+    <div class="empty-state">
+      <div class="icon">🛠️</div>
+      <div class="msg">Select a damage report</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var SB_URL  = 'https://uudbjkfnmahuhgqejxfx.supabase.co';
+var SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1ZGJqa2ZubWFodWhncWVqeGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkzMzQzMzEsImV4cCI6MjAzNDkxMDMzMX0.nTMJPnFjJalMXOKf0xVUjGHIGrJIYkXCcg3rKqLEJMo';
+var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
+var AUTH_BASE = 'https://www.kennecotttrainers.com';
+var TOKEN = localStorage.getItem('kt_token') || '';
+
+var STATUSES = ['all','reported','inspected','repaired','closed','draft'];
+var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported', inspected:'Inspected', repaired:'Repaired', closed:'Closed' };
+
+var reports = [];
+var cur = null;
+var activeFilter = 'all';
+var userName = '';
+var saveTimer = null;
+
+function esc(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) {
+  if (!d) return '—';
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  if (m) return (+m[2]) + '/' + (+m[3]) + '/' + m[1];
+  var dt = new Date(d); if (isNaN(dt)) return esc(d);
+  return dt.toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' });
+}
+
+// ── Auth ──────────────────────────────────────────────────
+(async function init() {
+  if (!TOKEN) { window.location.replace('signin.html'); return; }
+  try {
+    var r = await fetch(AUTH_BASE + '/auth/me', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    if (!r.ok) { window.location.replace('signin.html'); return; }
+    var me = await r.json();
+    var p = me.permissions || {};
+    var ok = p.superadmin || p.admin || (p.cables && p.cables.manage);
+    if (!ok) { window.location.replace('index.html'); return; }
+    userName = me.name || '';
+    await loadReports();
+  } catch (e) {
+    window.location.replace('signin.html');
+  }
+})();
+
+// ── Data ──────────────────────────────────────────────────
+async function loadReports() {
+  try {
+    var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?deleted_at=is.null&select=*&order=updated_at.desc&limit=500', { headers: HEADERS });
+    if (res.ok) reports = await res.json();
+  } catch (e) {}
+  buildStatusTabs();
+  renderList();
+}
+
+// ── Status tabs ───────────────────────────────────────────
+function buildStatusTabs() {
+  var counts = {};
+  STATUSES.forEach(function(s) { counts[s] = 0; });
+  reports.forEach(function(r) { counts[r.status] = (counts[r.status]||0) + 1; counts.all++; });
+  var el = document.getElementById('statusTabs');
+  el.innerHTML = STATUSES.map(function(s) {
+    return '<button class="ftab' + (activeFilter===s?' active':'') + '" onclick="setFilter(\'' + s + '\')">' + STATUS_LABELS[s] + ' (' + (counts[s]||0) + ')</button>';
+  }).join('');
+}
+
+function setFilter(f) { activeFilter = f; buildStatusTabs(); renderList(); }
+
+// ── Sidebar list ──────────────────────────────────────────
+function renderList() {
+  var q = (document.getElementById('search').value || '').toLowerCase().trim();
+  var filtered = reports.filter(function(r) {
+    if (activeFilter !== 'all' && r.status !== activeFilter) return false;
+    if (!q) return true;
+    return (r.cable_id||'').toLowerCase().indexOf(q) > -1 ||
+           (r.reporter_name||'').toLowerCase().indexOf(q) > -1 ||
+           (r.damage_type||'').toLowerCase().indexOf(q) > -1 ||
+           (r.location||'').toLowerCase().indexOf(q) > -1 ||
+           (r.description||'').toLowerCase().indexOf(q) > -1;
+  });
+  document.getElementById('listCount').textContent = filtered.length + ' of ' + reports.length + ' reports';
+  var list = document.getElementById('reportList');
+  list.innerHTML = filtered.map(function(r) {
+    return '<div class="report-item' + (cur && cur.id===r.id ? ' active' : '') + '" onclick="selectReport(\'' + r.id + '\')">' +
+      '<div class="ri-top"><span class="ri-id">' + esc(r.cable_id || 'No Cable ID') + '</span><span class="ri-status ' + r.status + '">' + (STATUS_LABELS[r.status]||r.status) + '</span></div>' +
+      '<div class="ri-meta">' + esc(r.damage_type||'—') + ' · ' + fmtDate(r.report_date) + '</div>' +
+      '<div class="ri-reporter">Reporter: ' + esc(r.reporter_name||'—') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function selectReport(id) {
+  cur = reports.find(function(r) { return r.id === id; }) || null;
+  renderList();
+  renderDetail();
+}
+
+// ── Detail view ───────────────────────────────────────────
+function renderDetail() {
+  var m = document.getElementById('main');
+  if (!cur) {
+    m.innerHTML = '<div class="empty-state"><div class="icon">🛠️</div><div class="msg">Select a damage report</div></div>';
+    return;
+  }
+  var r = cur;
+  var html = '';
+
+  html += '<div class="status-bar">' +
+    '<span class="status-pill ri-status ' + r.status + '">' + (STATUS_LABELS[r.status]||r.status) + '</span>' +
+    '<span style="font-size:13px;color:var(--muted)">Updated ' + fmtDate(r.updated_at) + '</span>' +
+    '<div class="workflow-btns" id="wfBtns"></div></div>';
+  html += '<div id="saveStatus" class="save-status"></div>';
+
+  // Report details (read-only)
+  html += '<div class="detail-card"><div class="detail-title">Report Details</div><div class="detail-grid">' +
+    field('Cable ID', r.cable_id) + field('Report Date', fmtDate(r.report_date)) + field('Damage Type', r.damage_type) +
+    field('Location', r.location) + field('Location Detail', r.location_detail, true) +
+    field('Description', r.description, true) + field('Probable Cause', r.cause, true) +
+    field('Immediate Action', r.immediate_action, true) +
+    field('Reporter', r.reporter_name) + field('Reporter Payroll', r.reporter_payroll) +
+    '</div>';
+  if (r.photos && r.photos.length) {
+    html += '<div class="detail-field full" style="margin-top:14px"><label>Photos (' + r.photos.length + ')</label><div class="photos">' +
+      r.photos.map(function(p) { return '<div class="thumb"><img src="' + (p.url||p.dataURL||'') + '" onclick="lightbox(this.src)"></div>'; }).join('') +
+      '</div></div>';
+  }
+  html += '</div>';
+
+  // Inspection (editable if status allows)
+  var canEditInspect = ['reported','inspected','repaired'].indexOf(r.status) > -1;
+  html += '<div class="detail-card"><div class="detail-title">Inspection</div><div class="detail-grid">';
+  if (canEditInspect) {
+    html += editField('Inspector', 'inspector_name', r.inspector_name) +
+            editField('Inspect Date', 'inspect_date', r.inspect_date, 'date') +
+            '<div class="detail-field full"><label>Inspection Notes</label><textarea oninput="upd(\'inspect_notes\',this.value)">' + esc(r.inspect_notes||'') + '</textarea></div>';
+  } else {
+    html += field('Inspector', r.inspector_name) + field('Inspect Date', fmtDate(r.inspect_date)) +
+            field('Inspection Notes', r.inspect_notes, true);
+  }
+  html += '</div></div>';
+
+  // Repair
+  var canEditRepair = ['inspected','repaired'].indexOf(r.status) > -1;
+  html += '<div class="detail-card"><div class="detail-title">Repair</div><div class="detail-grid">';
+  if (canEditRepair) {
+    html += editField('Repaired By', 'repair_name', r.repair_name) +
+            editField('Repair Date', 'repair_date', r.repair_date, 'date') +
+            '<div class="detail-field full"><label>Repair Notes</label><textarea oninput="upd(\'repair_notes\',this.value)">' + esc(r.repair_notes||'') + '</textarea></div>';
+  } else {
+    html += field('Repaired By', r.repair_name) + field('Repair Date', fmtDate(r.repair_date)) +
+            field('Repair Notes', r.repair_notes, true);
+  }
+  html += '</div></div>';
+
+  // Closure
+  if (r.status === 'closed') {
+    html += '<div class="detail-card"><div class="detail-title">Closure</div><div class="detail-grid">' +
+      field('Closed By', r.closed_by) + field('Closed Date', fmtDate(r.closed_date)) +
+      field('Closure Notes', r.closed_notes, true) +
+      '</div></div>';
+  }
+
+  m.innerHTML = html;
+  renderWorkflowBtns();
+}
+
+function field(lbl, val, full) {
+  var cls = val ? '' : ' empty';
+  return '<div class="detail-field' + (full ? ' full' : '') + '"><label>' + lbl + '</label><div class="val' + cls + '">' + esc(val || '—') + '</div></div>';
+}
+
+function editField(lbl, key, val, type) {
+  return '<div class="detail-field"><label>' + lbl + '</label><input type="' + (type||'text') + '" value="' + esc(val||'') + '" oninput="upd(\'' + key + '\',this.value)"></div>';
+}
+
+function renderWorkflowBtns() {
+  var w = document.getElementById('wfBtns');
+  if (!w || !cur) return;
+  var s = cur.status;
+  var btns = '';
+  if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'inspected\')">Mark Inspected</button>';
+  if (s === 'inspected') btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
+  if (s === 'repaired')  btns += '<button class="wf-btn primary" onclick="advance(\'closed\')">Close Report</button>';
+  w.innerHTML = btns;
+}
+
+function advance(next) {
+  if (!cur) return;
+  if (next === 'closed') {
+    cur.closed_by = userName;
+    cur.closed_date = new Date().toISOString().slice(0,10);
+  }
+  cur.status = next;
+  save();
+  renderDetail();
+  buildStatusTabs();
+  renderList();
+}
+
+function upd(key, val) {
+  if (!cur) return;
+  cur[key] = val;
+  clearTimeout(saveTimer);
+  setStatus('Saving…');
+  saveTimer = setTimeout(function() { save(); }, 800);
+}
+
+async function save() {
+  if (!cur) return;
+  cur.updated_at = new Date().toISOString();
+  try {
+    var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?id=eq.' + cur.id, {
+      method: 'PATCH',
+      headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+      body: JSON.stringify(cur)
+    });
+    if (res.ok) setStatus('Saved ✓');
+    else setStatus('Save failed', true);
+  } catch (e) { setStatus('Network error', true); }
+}
+
+function setStatus(msg, isErr) {
+  var el = document.getElementById('saveStatus');
+  if (el) { el.textContent = msg; el.className = 'save-status' + (isErr ? ' err' : ''); }
+}
+
+function lightbox(src) {
+  var lb = document.createElement('div'); lb.className = 'photo-lightbox';
+  lb.innerHTML = '<img src="' + src + '">';
+  lb.onclick = function() { lb.remove(); };
+  document.body.appendChild(lb);
+}
+</script>
+</body>
+</html>
