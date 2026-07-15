@@ -386,10 +386,12 @@ function scheduleSave() {
 
 async function pushCloud(r) {
   try {
+    const payload = Object.assign({}, r);
+    ['report_date','inspect_date','repair_date','closed_date'].forEach(k => { if (payload[k] === '') payload[k] = null; });
     const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports`, {
       method: 'POST',
       headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify(r)
+      body: JSON.stringify(payload)
     });
     if (res.ok) setStatus('Saved ✓');
     else setStatus('Save failed — will retry', true);

@@ -320,10 +320,12 @@ async function save() {
   if (!cur) return;
   cur.updated_at = new Date().toISOString();
   try {
+    var payload = Object.assign({}, cur);
+    ['report_date','inspect_date','repair_date','closed_date'].forEach(function(k) { if (payload[k] === '') payload[k] = null; });
     var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?id=eq.' + cur.id, {
       method: 'PATCH',
       headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
-      body: JSON.stringify(cur)
+      body: JSON.stringify(payload)
     });
     if (res.ok) setStatus('Saved ✓');
     else setStatus('Save failed', true);
