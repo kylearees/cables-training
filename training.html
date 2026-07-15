@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Training Material — Cables Training</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <script src="/header.js" defer></script>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="theme-color" content="#f5a623">
+  <style>
+    :root { --bg:#0f1117; --surface:#181c27; --card:#1e2333; --border:#2a3050; --accent:#f5a623; --text:#e8ecf4; --muted:#a8b4cc; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
+    header { background:var(--surface); border-bottom:3px solid var(--accent); padding:14px 18px 12px; }
+    .badge { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:3px; }
+    header h1 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
+    .wrap { max-width:860px; margin:0 auto; padding:28px 18px; }
+    .section-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
+    .card { background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:24px; margin-bottom:16px; }
+    .card h2 { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+    .card p { color:var(--muted); font-size:14px; line-height:1.6; }
+    .coming { text-align:center; padding:60px 20px; color:var(--muted); }
+    .coming .icon { font-size:48px; margin-bottom:12px; }
+    .coming h2 { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; color:var(--text); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="badge">Kennecott Mine · Cables Training</div>
+  <h1>Training Material</h1>
+</header>
+
+<div class="wrap">
+  <div class="coming">
+    <div class="icon">📖</div>
+    <h2>Training Material Coming Soon</h2>
+    <p>Cable handling procedures, safety guidelines, and training resources will be available here.</p>
+  </div>
+</div>
+
+<script>
+var TOKEN = localStorage.getItem('kt_token');
+if (!TOKEN && localStorage.getItem('cb_ok') !== '1') window.location.replace('signin.html');
+</script>
+</body>
+</html>

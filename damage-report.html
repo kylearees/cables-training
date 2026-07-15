@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Damage Report — Cables Training</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <script src="/header.js" defer></script>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="theme-color" content="#f5a623">
+  <style>
+    :root { --bg:#0f1117; --surface:#181c27; --card:#1e2333; --border:#2a3050; --accent:#f5a623; --text:#e8ecf4; --muted:#a8b4cc; --error:#ef4444; --green:#22c55e; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
+    header { background:var(--surface); border-bottom:3px solid var(--accent); padding:14px 18px 12px; }
+    .badge { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:3px; }
+    header h1 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
+
+    .layout { display:flex; height:calc(100vh - 56px); overflow:hidden; }
+    .sidebar { width:320px; min-width:260px; background:var(--surface); border-right:1.5px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+    .sidebar-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .sidebar-head button { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:var(--accent); color:#000; border:none; border-radius:6px; padding:9px 16px; cursor:pointer; white-space:nowrap; }
+    .sidebar-search { padding:10px 16px; border-bottom:1px solid var(--border); }
+    .sidebar-search input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:9px 12px; outline:none; }
+    .sidebar-search input:focus { border-color:var(--accent); }
+    .report-list { flex:1; overflow-y:auto; }
+    .report-item { padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+    .report-item:hover { background:var(--card); }
+    .report-item.active { background:var(--card); border-left:3px solid var(--accent); }
+    .ri-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .ri-id { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:.5px; }
+    .ri-status { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+    .ri-status.draft { background:rgba(168,180,204,.15); color:var(--muted); }
+    .ri-status.reported { background:rgba(245,166,35,.15); color:var(--accent); }
+    .ri-status.inspected { background:rgba(59,130,246,.15); color:#3b82f6; }
+    .ri-status.repaired { background:rgba(34,197,94,.15); color:var(--green); }
+    .ri-status.closed { background:rgba(168,180,204,.1); color:var(--muted); }
+    .ri-meta { font-size:13px; color:var(--muted); }
+
+    .main { flex:1; overflow-y:auto; padding:28px 32px; }
+    .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--muted); text-align:center; gap:12px; }
+    .empty-state .icon { font-size:48px; }
+    .empty-state .msg { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+
+    .form-card { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+    .form-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:16px; color:var(--accent); }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-grid.three { grid-template-columns:1fr 1fr 1fr; }
+    .form-field { display:flex; flex-direction:column; gap:5px; }
+    .form-field.full { grid-column:1/-1; }
+    .form-field label { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+    .form-field input, .form-field select, .form-field textarea { background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:10px 12px; outline:none; }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color:var(--accent); }
+    .form-field textarea { min-height:100px; resize:vertical; }
+    .form-field select { -webkit-appearance:none; appearance:none; cursor:pointer; }
+
+    .photos { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .thumb { position:relative; width:200px; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); background:var(--surface); }
+    .thumb img { width:200px; height:150px; object-fit:cover; display:block; cursor:pointer; }
+    .thumb .rm { position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; border:none; background:rgba(0,0,0,.7); color:#fff; font-size:14px; cursor:pointer; line-height:1; }
+    .addphoto { display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.5px; font-size:13px; color:var(--accent); cursor:pointer; padding:9px 14px; border:1.5px dashed rgba(245,166,35,.4); border-radius:8px; background:rgba(245,166,35,.06); }
+    .addphoto:hover { border-color:var(--accent); background:rgba(245,166,35,.12); }
+    .addphoto input { display:none; }
+    .photo-lightbox { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; cursor:zoom-out; }
+    .photo-lightbox img { max-width:92vw; max-height:92vh; border-radius:8px; box-shadow:0 4px 30px rgba(0,0,0,.6); }
+
+    .status-bar { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+    .status-pill { font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:6px; }
+    .workflow-btns { display:flex; gap:8px; margin-left:auto; }
+    .wf-btn { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:8px 16px; border-radius:6px; border:1.5px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; }
+    .wf-btn:hover { border-color:var(--accent); }
+    .wf-btn.primary { background:var(--accent); color:#000; border-color:var(--accent); }
+    .wf-btn.danger { border-color:var(--error); color:var(--error); }
+    .wf-btn.danger:hover { background:var(--error); color:#fff; }
+
+    .save-status { font-size:13px; color:var(--muted); padding:8px 0; }
+    .save-status.err { color:var(--error); }
+
+    @media (max-width:700px) {
+      .layout { flex-direction:column; height:auto; }
+      .sidebar { width:100%; max-height:40vh; border-right:none; border-bottom:1.5px solid var(--border); }
+      .main { padding:20px 16px; }
+      .form-grid { grid-template-columns:1fr; }
+      .form-grid.three { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="badge">Kennecott Mine · Cables Training</div>
+  <h1>Damage Reports</h1>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <button onclick="newReport()">+ New Report</button>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="search" placeholder="Search reports…" oninput="renderList()">
+    </div>
+    <div class="report-list" id="reportList"></div>
+  </div>
+  <div class="main" id="main">
+    <div class="empty-state">
+      <div class="icon">⚡</div>
+      <div class="msg">Select or create a damage report</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL  = 'https://uudbjkfnmahuhgqejxfx.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1ZGJqa2ZubWFodWhncWVqeGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkzMzQzMzEsImV4cCI6MjAzNDkxMDMzMX0.nTMJPnFjJalMXOKf0xVUjGHIGrJIYkXCcg3rKqLEJMo';
+const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
+const AUTH_BASE = 'https://www.kennecotttrainers.com';
+const TOKEN = localStorage.getItem('kt_token') || '';
+
+const STATUSES = ['draft','reported','inspected','repaired','closed'];
+const STATUS_LABELS = { draft:'Draft', reported:'Reported', inspected:'Inspected', repaired:'Repaired', closed:'Closed' };
+const DAMAGE_TYPES = ['Cut','Crush','Burn','Abrasion','Splice Failure','Ground Fault','Other'];
+const LOCATIONS = ['Pit','Dump','Haul Road','Shop Area','Other'];
+
+let reports = [];
+let cur = null;
+let saveTimer = null;
+
+function esc(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) {
+  if (!d) return '—';
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  if (m) return `${+m[2]}/${+m[3]}/${m[1]}`;
+  const dt = new Date(d); if (isNaN(dt)) return esc(d);
+  return dt.toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' });
+}
+
+async function authFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+  const res = await fetch(AUTH_BASE + path, { ...opts, headers });
+  let data = null; try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, data };
+}
+
+// ── Auth gate ─────────────────────────────────────────────
+let userName = '', userPayroll = '';
+(async function init() {
+  if (!TOKEN) { window.location.replace('signin.html'); return; }
+  try {
+    const { ok, data } = await authFetch('/auth/me', { method: 'GET' });
+    if (!ok || !data) { window.location.replace('signin.html'); return; }
+    const p = data.permissions || {};
+    if (!(p.superadmin || p.admin || (p.cables && p.cables.access))) { window.location.replace('signin.html'); return; }
+    userName = data.name || '';
+    userPayroll = String(data.payroll || '');
+    await loadReports();
+  } catch (e) {
+    if (localStorage.getItem('cb_ok') !== '1') { window.location.replace('signin.html'); return; }
+    loadLocal();
+  }
+})();
+
+// ── Data ──────────────────────────────────────────────────
+const LS_KEY = 'cable_damage_reports';
+function loadLocal() { try { reports = JSON.parse(localStorage.getItem(LS_KEY)||'[]'); } catch(e) { reports=[]; } renderList(); }
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(reports)); } catch(e) {} }
+
+async function loadReports() {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports?deleted_at=is.null&select=*&order=updated_at.desc&limit=200`, { headers: HEADERS });
+    if (res.ok) {
+      reports = await res.json();
+      saveLocal();
+    } else { loadLocal(); }
+  } catch (e) { loadLocal(); }
+  renderList();
+}
+
+function blankReport() {
+  const today = new Date().toISOString().slice(0,10);
+  const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('dr'+Date.now()+Math.random().toString(16).slice(2));
+  return {
+    id, status:'draft', reporter_name:userName, reporter_payroll:userPayroll,
+    report_date:today, cable_id:'', damage_type:'', location:'', location_detail:'',
+    description:'', cause:'', immediate_action:'', photos:[], notes:'',
+    inspector_name:'', inspect_date:'', inspect_notes:'',
+    repair_name:'', repair_date:'', repair_notes:'',
+    closed_by:'', closed_date:'', closed_notes:'',
+    created_at:new Date().toISOString(), updated_at:new Date().toISOString()
+  };
+}
+
+function newReport() {
+  cur = blankReport();
+  reports.unshift(cur);
+  saveLocal();
+  renderList();
+  renderForm();
+}
+
+function selectReport(id) {
+  cur = reports.find(r => r.id === id) || null;
+  renderList();
+  renderForm();
+}
+
+// ── Sidebar list ──────────────────────────────────────────
+function renderList() {
+  const q = (document.getElementById('search').value || '').toLowerCase().trim();
+  const list = document.getElementById('reportList');
+  const filtered = reports.filter(r => {
+    if (!q) return true;
+    return (r.cable_id||'').toLowerCase().includes(q) || (r.reporter_name||'').toLowerCase().includes(q) ||
+           (r.damage_type||'').toLowerCase().includes(q) || (r.location||'').toLowerCase().includes(q) ||
+           (r.description||'').toLowerCase().includes(q);
+  });
+  list.innerHTML = filtered.map(r => `
+    <div class="report-item${cur && cur.id===r.id?' active':''}" onclick="selectReport('${r.id}')">
+      <div class="ri-top">
+        <span class="ri-id">${esc(r.cable_id || 'No Cable ID')}</span>
+        <span class="ri-status ${r.status}">${STATUS_LABELS[r.status]||r.status}</span>
+      </div>
+      <div class="ri-meta">${esc(r.damage_type||'—')} · ${fmtDate(r.report_date)} · ${esc(r.reporter_name||'—')}</div>
+    </div>`).join('');
+}
+
+// ── Form ──────────────────────────────────────────────────
+function renderForm() {
+  const m = document.getElementById('main');
+  if (!cur) {
+    m.innerHTML = `<div class="empty-state"><div class="icon">⚡</div><div class="msg">Select or create a damage report</div></div>`;
+    return;
+  }
+  const r = cur;
+  const isLocked = r.status === 'closed';
+  const dis = isLocked ? 'disabled' : '';
+
+  let html = `
+    <div class="status-bar">
+      <span class="status-pill ri-status ${r.status}">${STATUS_LABELS[r.status]}</span>
+      <span style="font-size:13px;color:var(--muted)">Created ${fmtDate(r.created_at)}</span>
+      <div class="workflow-btns" id="wfBtns"></div>
+    </div>
+    <div id="saveStatus" class="save-status"></div>
+
+    <div class="form-card">
+      <div class="form-title">Report Details</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Cable ID / Number</label>
+          <input id="f-cable" value="${esc(r.cable_id)}" ${dis} oninput="upd('cable_id',this.value)">
+        </div>
+        <div class="form-field">
+          <label>Report Date</label>
+          <input id="f-date" type="date" value="${esc(r.report_date)}" ${dis} onchange="upd('report_date',this.value)">
+        </div>
+        <div class="form-field">
+          <label>Damage Type</label>
+          <select id="f-type" ${dis} onchange="upd('damage_type',this.value)">
+            <option value="">— Select —</option>
+            ${DAMAGE_TYPES.map(t => `<option value="${t}"${r.damage_type===t?' selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Location</label>
+          <select id="f-loc" ${dis} onchange="upd('location',this.value)">
+            <option value="">— Select —</option>
+            ${LOCATIONS.map(l => `<option value="${l}"${r.location===l?' selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Location Detail</label>
+          <input id="f-locdet" value="${esc(r.location_detail)}" placeholder="Bench, road name, specific area…" ${dis} oninput="upd('location_detail',this.value)">
+        </div>
+        <div class="form-field full">
+          <label>Description of Damage</label>
+          <textarea id="f-desc" ${dis} oninput="upd('description',this.value)">${esc(r.description)}</textarea>
+        </div>
+        <div class="form-field full">
+          <label>Probable Cause</label>
+          <textarea id="f-cause" style="min-height:60px" ${dis} oninput="upd('cause',this.value)">${esc(r.cause)}</textarea>
+        </div>
+        <div class="form-field full">
+          <label>Immediate Action Taken</label>
+          <textarea id="f-action" style="min-height:60px" ${dis} oninput="upd('immediate_action',this.value)">${esc(r.immediate_action)}</textarea>
+        </div>
+      </div>
+      <div class="form-field full" style="margin-top:14px">
+        <label>Photos</label>
+        <div class="photos" id="photoWrap"></div>
+        ${isLocked ? '' : '<label class="addphoto">📷 Add photo<input type="file" accept="image/*" multiple onchange="addPhotos(this)"></label>'}
+      </div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="form-field">
+          <label>Reporter</label>
+          <input value="${esc(r.reporter_name)}" disabled>
+        </div>
+        <div class="form-field">
+          <label>Reporter Payroll</label>
+          <input value="${esc(r.reporter_payroll)}" disabled>
+        </div>
+      </div>
+    </div>`;
+
+  if (r.status !== 'draft') {
+    html += `
+    <div class="form-card">
+      <div class="form-title">Inspection</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Inspector</label><input id="f-insp" value="${esc(r.inspector_name)}" ${isLocked?'disabled':''} oninput="upd('inspector_name',this.value)"></div>
+        <div class="form-field"><label>Inspect Date</label><input type="date" id="f-inspd" value="${esc(r.inspect_date)}" ${isLocked?'disabled':''} onchange="upd('inspect_date',this.value)"></div>
+        <div class="form-field full"><label>Inspection Notes</label><textarea id="f-inspn" style="min-height:60px" ${isLocked?'disabled':''} oninput="upd('inspect_notes',this.value)">${esc(r.inspect_notes)}</textarea></div>
+      </div>
+    </div>`;
+  }
+
+  if (['inspected','repaired','closed'].includes(r.status)) {
+    html += `
+    <div class="form-card">
+      <div class="form-title">Repair</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Repaired By</label><input id="f-rep" value="${esc(r.repair_name)}" ${isLocked?'disabled':''} oninput="upd('repair_name',this.value)"></div>
+        <div class="form-field"><label>Repair Date</label><input type="date" id="f-repd" value="${esc(r.repair_date)}" ${isLocked?'disabled':''} onchange="upd('repair_date',this.value)"></div>
+        <div class="form-field full"><label>Repair Notes</label><textarea id="f-repn" style="min-height:60px" ${isLocked?'disabled':''} oninput="upd('repair_notes',this.value)">${esc(r.repair_notes)}</textarea></div>
+      </div>
+    </div>`;
+  }
+
+  if (r.status === 'closed') {
+    html += `
+    <div class="form-card">
+      <div class="form-title">Closure</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Closed By</label><input value="${esc(r.closed_by)}" disabled></div>
+        <div class="form-field"><label>Closed Date</label><input value="${fmtDate(r.closed_date)}" disabled></div>
+        <div class="form-field full"><label>Closure Notes</label><textarea disabled>${esc(r.closed_notes)}</textarea></div>
+      </div>
+    </div>`;
+  }
+
+  m.innerHTML = html;
+  renderPhotos();
+  renderWorkflowBtns();
+}
+
+function renderWorkflowBtns() {
+  const w = document.getElementById('wfBtns');
+  if (!w || !cur) return;
+  const s = cur.status;
+  let btns = '';
+  if (s === 'draft')     btns = `<button class="wf-btn primary" onclick="advanceStatus('reported')">Submit Report</button>`;
+  if (s === 'reported')  btns = `<button class="wf-btn primary" onclick="advanceStatus('inspected')">Mark Inspected</button>`;
+  if (s === 'inspected') btns = `<button class="wf-btn primary" onclick="advanceStatus('repaired')">Mark Repaired</button>`;
+  if (s === 'repaired')  btns = `<button class="wf-btn primary" onclick="advanceStatus('closed')">Close Report</button>`;
+  if (s !== 'closed')    btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
+  w.innerHTML = btns;
+}
+
+function advanceStatus(next) {
+  if (!cur) return;
+  if (next === 'closed') {
+    cur.closed_by = userName;
+    cur.closed_date = new Date().toISOString().slice(0,10);
+  }
+  cur.status = next;
+  scheduleSave();
+  renderForm();
+}
+
+function upd(field, val) {
+  if (!cur) return;
+  cur[field] = val;
+  scheduleSave();
+}
+
+function scheduleSave() {
+  if (!cur) return;
+  cur.updated_at = new Date().toISOString();
+  saveLocal();
+  renderList();
+  clearTimeout(saveTimer);
+  setStatus('Saving…');
+  saveTimer = setTimeout(() => pushCloud(cur), 800);
+}
+
+async function pushCloud(r) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports`, {
+      method: 'POST',
+      headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify(r)
+    });
+    if (res.ok) setStatus('Saved ✓');
+    else setStatus('Save failed — will retry', true);
+  } catch (e) { setStatus('Offline — saved on device', true); }
+}
+
+function setStatus(msg, isErr) {
+  const el = document.getElementById('saveStatus');
+  if (el) { el.textContent = msg; el.className = 'save-status' + (isErr ? ' err' : ''); }
+}
+
+async function deleteReport() {
+  if (!cur || !confirm('Delete this damage report?')) return;
+  cur.deleted_at = new Date().toISOString();
+  try { await pushCloud(cur); } catch (e) {}
+  reports = reports.filter(r => r.id !== cur.id);
+  cur = null;
+  saveLocal();
+  renderList();
+  renderForm();
+}
+
+// ── Photos (local dataURL, no cloud upload yet) ──────────
+function resizeImage(file, maxDim, quality) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          const ratio = Math.min(maxDim/w, maxDim/h);
+          w = Math.round(w*ratio); h = Math.round(h*ratio);
+        }
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve({ dataURL: c.toDataURL('image/jpeg', quality), w, h });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addPhotos(input) {
+  if (!cur || cur.status === 'closed') { input.value = ''; return; }
+  const files = [...input.files]; input.value = '';
+  if (!cur.photos) cur.photos = [];
+  for (const file of files) {
+    const origKB = Math.round(file.size / 1024);
+    const r = await resizeImage(file, 2048, 0.85);
+    if (!r) continue;
+    const newKB = Math.round((r.dataURL.length - (r.dataURL.indexOf(',') + 1)) * 0.75 / 1024);
+    cur.photos.push({ dataURL: r.dataURL, origKB, newKB, w: r.w, h: r.h });
+  }
+  renderPhotos();
+  scheduleSave();
+}
+
+function renderPhotos() {
+  const wrap = document.getElementById('photoWrap');
+  if (!wrap || !cur) return;
+  wrap.innerHTML = '';
+  (cur.photos || []).forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'thumb';
+    d.innerHTML = `<img src="${p.url||p.dataURL||''}">` +
+      (cur.status !== 'closed' ? `<button class="rm" title="Remove">×</button>` : '');
+    d.querySelector('img').onclick = () => {
+      const lb = document.createElement('div'); lb.className = 'photo-lightbox';
+      lb.innerHTML = `<img src="${p.url||p.dataURL||''}">`;
+      lb.onclick = () => lb.remove();
+      document.body.appendChild(lb);
+    };
+    const rm = d.querySelector('.rm');
+    if (rm) rm.onclick = () => { cur.photos.splice(i, 1); renderPhotos(); scheduleSave(); };
+    wrap.appendChild(d);
+  });
+}
+
+// ── Auth check ────────────────────────────────────────────
+if (!TOKEN && localStorage.getItem('cb_ok') !== '1') window.location.replace('signin.html');
+</script>
+</body>
+</html>

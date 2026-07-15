@@ -1,0 +1,46 @@
+/* Unified Kennecott header — matches the www.kennecotttrainers.com portal header.
+   Kicker + screen title on the left; user name/role, avatar -> profile panel,
+   Home, and Log Out on the right. Paired with /header.js.
+   Uses var() with fallbacks so it works regardless of each page's theme. */
+
+.app-header { background:var(--surface,#181c27); border-bottom:3px solid var(--accent,#f5a623); padding:14px 22px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; font-family:'Barlow',sans-serif; }
+.app-header .brand-row { display:flex; align-items:center; gap:14px; min-width:0; }
+.app-header .kicker { font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent,#f5a623); font-family:'Barlow Condensed',sans-serif; font-weight:700; margin-bottom:3px; white-space:nowrap; }
+.app-header .screen-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; color:var(--text,#e8ecf4); }
+
+.app-header .user-row { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.app-header .user-info { text-align:right; line-height:1.25; }
+.app-header .user-name { font-size:13px; font-weight:600; color:var(--text,#e8ecf4); }
+.app-header .user-role-lbl { font-size:12.5px; color:var(--muted,#a8b4cc); }
+
+.app-header .avatar-wrap { position:relative; }
+.app-header .avatar { width:36px; height:36px; border-radius:50%; background:rgba(245,166,35,.15); color:var(--accent,#f5a623); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'Barlow Condensed',sans-serif; flex-shrink:0; cursor:pointer; transition:background .15s; }
+.app-header .avatar:hover { background:rgba(245,166,35,.28); }
+
+.app-header .hdr-btn { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted,#a8b4cc); background:none; border:1.5px solid var(--border,#2a3050); border-radius:6px; padding:8px 14px; cursor:pointer; transition:all .15s; text-decoration:none; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.app-header .hdr-btn:hover { color:var(--text,#e8ecf4); border-color:var(--muted,#a8b4cc); }
+
+.profile-panel { position:absolute; top:calc(100% + 10px); right:0; width:300px; background:var(--surface,#181c27); border:1.5px solid var(--border,#2a3050); border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,.55); z-index:300; overflow:hidden; text-align:left; }
+.profile-panel .pp-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid var(--border,#2a3050); }
+.profile-panel .pp-title { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--text,#e8ecf4); }
+.profile-panel .pp-close { background:none; border:none; color:var(--muted,#a8b4cc); cursor:pointer; font-size:18px; line-height:1; padding:0 2px; }
+.profile-panel .pp-close:hover { color:var(--text,#e8ecf4); }
+.profile-panel .pp-display-name { padding:10px 16px 8px; font-size:14px; font-weight:600; color:var(--muted,#a8b4cc); border-bottom:1px solid var(--border,#2a3050); }
+.profile-panel .pp-section { padding:14px 16px; display:flex; flex-direction:column; gap:6px; }
+.profile-panel .pp-section + .pp-section { border-top:1px solid var(--border,#2a3050); }
+.profile-panel .pp-section-title { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted,#a8b4cc); margin-bottom:4px; }
+.profile-panel .pp-label { font-size:13px; color:var(--muted,#a8b4cc); }
+.profile-panel .pp-input { background:var(--card,#1e2333); border:1.5px solid var(--border,#2a3050); border-radius:7px; color:var(--text,#e8ecf4); font-family:'Barlow',sans-serif; font-size:14px; padding:8px 10px; outline:none; width:100%; }
+.profile-panel .pp-input:focus { border-color:var(--accent,#f5a623); }
+.profile-panel .pp-btn { margin-top:6px; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:var(--accent,#f5a623); color:#000; border:none; border-radius:7px; padding:9px 16px; cursor:pointer; align-self:flex-end; }
+.profile-panel .pp-btn:disabled { opacity:.5; cursor:default; }
+.profile-panel .pp-status { font-size:13px; min-height:16px; }
+.profile-panel .pp-status.ok { color:#22c55e; }
+.profile-panel .pp-status.err { color:#ef4444; }
+
+@media (max-width:560px) {
+  .app-header { padding:12px 16px; }
+  .app-header .screen-title { font-size:20px; }
+  .app-header .user-info { display:none; }
+  .profile-panel { width:270px; }
+}

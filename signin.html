@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Sign In — Cables Training</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <script src="/header.js" defer></script>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="theme-color" content="#f5a623">
+  <style>
+    :root { --bg:#0f1117; --surface:#181c27; --card:#1e2333; --border:#2a3050; --accent:#f5a623; --text:#e8ecf4; --muted:#a8b4cc; --error:#ef4444; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+    header { background:var(--surface); border-bottom:3px solid var(--accent); padding:14px 18px 12px; }
+    .badge { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:3px; }
+    header h1 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
+    .wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:14px; padding:32px 16px; }
+    .box { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:28px 24px; width:100%; max-width:400px; }
+    .box-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+    .box-sub { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+    .field { margin-bottom:14px; }
+    .field label { display:block; font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; font-family:'Barlow Condensed',sans-serif; }
+    .field input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:16px; padding:11px 13px; outline:none; -webkit-appearance:none; }
+    .field input:focus { border-color:var(--accent); }
+    .btn { width:100%; padding:13px; background:var(--accent); color:#000; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:6px; cursor:pointer; margin-top:4px; }
+    .btn:disabled { opacity:.5; cursor:default; }
+    .link { display:block; text-align:center; margin-top:16px; font-size:13px; color:var(--accent); cursor:pointer; text-decoration:none; font-weight:600; }
+    .link.muted { color:var(--muted); }
+    .err { color:var(--error); font-size:13px; font-weight:600; margin-top:12px; display:none; text-align:center; }
+    .dest-grid { display:flex; flex-direction:column; gap:10px; }
+    .dest-btn { width:100%; padding:14px; background:var(--card); border:1.5px solid var(--border); border-radius:8px; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; text-align:left; }
+    .dest-btn:hover { border-color:var(--accent); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="badge">Kennecott Mine · Cables Training</div>
+  <h1>Sign In</h1>
+</header>
+<div class="wrap">
+
+  <div class="box" id="box-login">
+    <div class="box-title">Sign In</div>
+    <div class="box-sub">Your username is your payroll number.</div>
+    <div class="field">
+      <label>Payroll Number</label>
+      <input id="li-payroll" type="text" inputmode="numeric" autocomplete="username" placeholder="e.g. 1234567">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input id="li-password" type="password" autocomplete="current-password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn" id="li-btn" onclick="doLogin()">Sign In</button>
+    <div class="err" id="li-err"></div>
+    <a class="link" onclick="show('setup')">First time / forgot password?</a>
+  </div>
+
+  <div class="box" id="box-setup" style="display:none">
+    <div class="box-title">Set Your Password</div>
+    <div class="box-sub" id="su-sub">Verify with your name and payroll number to continue.</div>
+    <div class="field"><label>Full Name</label><input id="su-name" type="text" autocomplete="name" placeholder="First Last"></div>
+    <div class="field"><label>Payroll Number</label><input id="su-payroll" type="text" inputmode="numeric" placeholder="e.g. 1234567"></div>
+    <div id="su-step2" style="display:none">
+      <div class="field" id="su-code-group" style="display:none"><label>Verification Code</label><input id="su-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" onkeydown="if(event.key==='Enter')suSubmit()"></div>
+      <div class="field"><label>New Password</label><input id="su-password" type="password" autocomplete="new-password" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')suSubmit()"></div>
+      <div class="field" id="su-email-group" style="display:none"><label>Personal Email (required — for recovery)</label><input id="su-email" type="email" autocomplete="email" placeholder="you@example.com — no work emails" onkeydown="if(event.key==='Enter')suSubmit()"></div>
+    </div>
+    <button class="btn" id="su-btn" onclick="suSubmit()">Continue</button>
+    <div class="err" id="su-err"></div>
+    <a class="link" onclick="show('login')">&larr; Back to sign in</a>
+  </div>
+
+  <div class="box" id="box-dest" style="display:none">
+    <div class="box-title" id="dest-hello">Welcome</div>
+    <div class="box-sub">You're signed in to Cables Training.</div>
+    <div class="dest-grid" id="dest-grid"></div>
+    <a class="link muted" onclick="signOut()">Sign out</a>
+  </div>
+
+</div>
+
+<script>
+const AUTH_BASE = 'https://www.kennecotttrainers.com';
+const TOKEN_KEY = 'kt_token';
+const PERMS_KEY = 'kt_perms';
+const EXP_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function authFetch(path, opts = {}) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(AUTH_BASE + path, { ...opts, headers });
+  let data = null; try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+let suMode = 'verify';
+function resetSetupView() {
+  suMode = 'verify';
+  document.getElementById('su-step2').style.display = 'none';
+  document.getElementById('su-code-group').style.display = 'none';
+  document.getElementById('su-email-group').style.display = 'none';
+  document.getElementById('su-sub').textContent = 'Verify with your name and payroll number to continue.';
+  const b = document.getElementById('su-btn'); b.disabled = false; b.textContent = 'Continue';
+}
+function show(which) {
+  document.getElementById('box-login').style.display = which === 'login' ? '' : 'none';
+  document.getElementById('box-setup').style.display = which === 'setup' ? '' : 'none';
+  document.getElementById('box-dest').style.display  = which === 'dest'  ? '' : 'none';
+  if (which === 'setup') resetSetupView();
+}
+function err(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.style.display = 'block'; }
+function clr(id) { document.getElementById(id).style.display = 'none'; }
+
+async function doLogin() {
+  clr('li-err');
+  const payroll = document.getElementById('li-payroll').value.trim();
+  const password = document.getElementById('li-password').value;
+  if (!payroll || !password) { err('li-err', 'Enter your payroll number and password.'); return; }
+  const btn = document.getElementById('li-btn'); btn.disabled = true; btn.textContent = 'Signing in…';
+  const { ok, data } = await authFetch('/auth/login', { method: 'POST', body: JSON.stringify({ payroll, password }) });
+  btn.disabled = false; btn.textContent = 'Sign In';
+  if (!ok) {
+    if (data && data.mustReset) {
+      document.getElementById('su-payroll').value = payroll;
+      show('setup');
+      err('su-err', data.error || 'Set your own password and a recovery email to continue.');
+      return;
+    }
+    err('li-err', (data && data.error) || 'Sign in failed.'); return;
+  }
+  onAuthed(data);
+}
+
+function suSubmit() { if (suMode === 'verify') doVerify(); else doSetPassword(); }
+
+async function doVerify() {
+  clr('su-err');
+  const name = document.getElementById('su-name').value.trim();
+  const payroll = document.getElementById('su-payroll').value.trim();
+  if (!name || !payroll) { err('su-err', 'Enter your full name and payroll number.'); return; }
+  const btn = document.getElementById('su-btn'); btn.disabled = true; btn.textContent = 'Checking…';
+  const { ok, data } = await authFetch('/auth/request-reset-code', { method: 'POST', body: JSON.stringify({ name, payroll }) });
+  btn.disabled = false;
+  if (!ok) { err('su-err', (data && data.error) || 'Could not verify your details.'); btn.textContent = 'Continue'; return; }
+  document.getElementById('su-step2').style.display = '';
+  if (data && data.needsCode) {
+    suMode = 'code';
+    document.getElementById('su-code-group').style.display = '';
+    document.getElementById('su-email-group').style.display = 'none';
+    document.getElementById('su-sub').innerHTML = 'We emailed a 6-digit code to <strong>' + ((data && data.emailHint) || 'your email') + '</strong>. Enter it below with a new password.';
+    document.getElementById('su-code').focus();
+  } else {
+    suMode = 'firsttime';
+    document.getElementById('su-code-group').style.display = 'none';
+    document.getElementById('su-email-group').style.display = '';
+    document.getElementById('su-sub').textContent = 'Choose a password and a personal recovery email.';
+    document.getElementById('su-password').focus();
+  }
+  btn.textContent = 'Set Password & Sign In';
+}
+
+async function doSetPassword() {
+  clr('su-err');
+  const name = document.getElementById('su-name').value.trim();
+  const payroll = document.getElementById('su-payroll').value.trim();
+  const password = document.getElementById('su-password').value;
+  if (password.length < 6) { err('su-err', 'Password must be at least 6 characters.'); return; }
+  const payload = { name, payroll, password };
+  if (suMode === 'code') {
+    const code = document.getElementById('su-code').value.trim();
+    if (!code) { err('su-err', 'Enter the 6-digit code we emailed you.'); return; }
+    payload.code = code;
+  } else {
+    const email = document.getElementById('su-email').value.trim();
+    if (!email) { err('su-err', 'A personal recovery email is required.'); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err('su-err', 'Please enter a valid email address.'); return; }
+    if (/riotinto\.com$/i.test(email)) { err('su-err', 'Please use a personal email — work (riotinto.com) addresses aren\'t allowed.'); return; }
+    payload.email = email;
+  }
+  const btn = document.getElementById('su-btn'); btn.disabled = true; btn.textContent = 'Saving…';
+  const { ok, data } = await authFetch('/auth/set-password', { method: 'POST', body: JSON.stringify(payload) });
+  btn.disabled = false; btn.textContent = 'Set Password & Sign In';
+  if (!ok) {
+    err('su-err', (data && data.error) || 'Could not set password.');
+    if (data && data.needsCode && suMode !== 'code') {
+      suMode = 'code';
+      document.getElementById('su-code-group').style.display = '';
+      document.getElementById('su-email-group').style.display = 'none';
+    }
+    return;
+  }
+  onAuthed(data);
+}
+
+function onAuthed(data) {
+  if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+  if (data.payroll) localStorage.setItem('kt_payroll', data.payroll);
+  const perm = data.permissions || {};
+  localStorage.setItem(PERMS_KEY, JSON.stringify(perm));
+  buildChooser(data.name, perm);
+}
+
+function hasCables(perm) {
+  if (!perm) return false;
+  return perm.superadmin === true || (perm.cables && perm.cables.access === true);
+}
+
+function buildChooser(name, perm) {
+  document.getElementById('dest-hello').textContent = 'Welcome, ' + (String(name || '').split(' ')[0] || '');
+  const grid = document.getElementById('dest-grid');
+  if (hasCables(perm)) {
+    grid.innerHTML = `<button class="dest-btn" onclick="enter()">&#9654; Enter Cables Training</button>`;
+  } else {
+    grid.innerHTML = `<div class="box-sub" style="margin:0">Your account doesn't have Cables access yet. Ask your administrator.</div>`;
+  }
+  show('dest');
+}
+
+function enter() {
+  localStorage.setItem('cb_ok', '1');
+  localStorage.setItem('cb_ok_exp', Date.now() + EXP_MS);
+  window.location.href = 'index.html';
+}
+
+async function signOut() {
+  try { await authFetch('/auth/logout', { method: 'POST' }); } catch (e) {}
+  ['kt_token','kt_perms','kt_payroll','cb_ok','cb_ok_exp'].forEach(k => localStorage.removeItem(k));
+  show('login');
+}
+
+(async () => {
+  const ssoToken = new URLSearchParams(location.search).get('sso');
+  if (ssoToken) {
+    localStorage.setItem(TOKEN_KEY, ssoToken);
+    history.replaceState({}, '', location.pathname);
+  }
+  if (!localStorage.getItem(TOKEN_KEY)) return;
+  try {
+    const { ok, data } = await authFetch('/auth/me', { method: 'GET' });
+    if (ok && data) {
+      localStorage.setItem(PERMS_KEY, JSON.stringify(data.permissions || {}));
+      if (data.payroll) localStorage.setItem('kt_payroll', data.payroll);
+      if (ssoToken && hasCables(data.permissions || {})) { enter(); return; }
+      buildChooser(data.name, data.permissions || {});
+    }
+  } catch (e) {
+    const cached = localStorage.getItem(PERMS_KEY);
+    if (cached) { try { buildChooser('', JSON.parse(cached)); } catch (_) {} }
+  }
+})();
+</script>
+</body>
+</html>
