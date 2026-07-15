@@ -376,7 +376,9 @@ function scheduleSave() {
 async function pushCloud(r) {
   try {
     const payload = Object.assign({}, r);
-    ['report_date','inspect_date','repair_date','closed_date','occurrence_datetime'].forEach(k => { if (payload[k] === '') payload[k] = null; });
+    delete payload.photos;
+    Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
+    console.log('pushCloud payload:', JSON.stringify(payload).slice(0, 500));
     const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports`, {
       method: 'POST',
       headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
@@ -384,7 +386,7 @@ async function pushCloud(r) {
     });
     if (res.ok) setStatus('Saved ✓');
     else { const err = await res.text(); console.error('Save error:', res.status, err); setStatus('Save failed — will retry', true); }
-  } catch (e) { setStatus('Offline — saved on device', true); }
+  } catch (e) { console.error('pushCloud exception:', e); setStatus('Offline — saved on device', true); }
 }
 
 function setStatus(msg, isErr) {
