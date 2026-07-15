@@ -302,30 +302,6 @@ function renderForm() {
       </div>
     </div>`;
 
-  if (['reported','repaired','closed'].includes(r.status)) {
-    html += `
-    <div class="form-card">
-      <div class="form-title">Repair</div>
-      <div class="form-grid">
-        <div class="form-field"><label>Repaired By</label><input id="f-rep" value="${esc(r.repair_name)}" ${isLocked?'disabled':''} oninput="upd('repair_name',this.value)"></div>
-        <div class="form-field"><label>Repair Date</label><input type="date" id="f-repd" value="${esc(r.repair_date)}" ${isLocked?'disabled':''} onchange="upd('repair_date',this.value)"></div>
-        <div class="form-field full"><label>Repair Notes</label><textarea id="f-repn" style="min-height:60px" ${isLocked?'disabled':''} oninput="upd('repair_notes',this.value)">${esc(r.repair_notes)}</textarea></div>
-      </div>
-    </div>`;
-  }
-
-  if (r.status === 'closed') {
-    html += `
-    <div class="form-card">
-      <div class="form-title">Closure</div>
-      <div class="form-grid">
-        <div class="form-field"><label>Closed By</label><input value="${esc(r.closed_by)}" disabled></div>
-        <div class="form-field"><label>Closed Date</label><input value="${fmtDate(r.closed_date)}" disabled></div>
-        <div class="form-field full"><label>Closure Notes</label><textarea disabled>${esc(r.closed_notes)}</textarea></div>
-      </div>
-    </div>`;
-  }
-
   m.innerHTML = html;
   renderPhotos();
   renderWorkflowBtns();
