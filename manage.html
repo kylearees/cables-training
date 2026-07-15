@@ -22,13 +22,6 @@
     .sidebar-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
     .sidebar-head h2 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
     .sidebar-head .count { font-size:13px; color:var(--muted); margin-top:2px; }
-    .filter-bar { padding:10px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
-    .filter-bar input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; padding:9px 12px; outline:none; }
-    .filter-bar input:focus { border-color:var(--accent); }
-    .filter-tabs { display:flex; gap:4px; flex-wrap:wrap; }
-    .ftab { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:5px 10px; border-radius:5px; border:1.5px solid var(--border); background:none; color:var(--muted); cursor:pointer; }
-    .ftab:hover { border-color:var(--muted); }
-    .ftab.active { border-color:var(--accent); color:var(--accent); background:rgba(245,166,35,.08); }
     .report-list { flex:1; overflow-y:auto; }
     .report-item { padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
     .report-item:hover { background:var(--card); }
@@ -97,10 +90,6 @@
       <h2>Damage Reports</h2>
       <div class="count" id="listCount"></div>
     </div>
-    <div class="filter-bar">
-      <input type="text" id="search" placeholder="Search cable ID, reporter, type…" oninput="renderList()">
-      <div class="filter-tabs" id="statusTabs"></div>
-    </div>
     <div class="report-list" id="reportList"></div>
   </div>
   <div class="main" id="main">
@@ -118,12 +107,10 @@ var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
 var AUTH_BASE = 'https://www.kennecotttrainers.com';
 var TOKEN = localStorage.getItem('kt_token') || '';
 
-var STATUSES = ['all','reported','draft'];
-var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported' };
+var STATUS_LABELS = { draft:'Draft', reported:'Reported' };
 
 var reports = [];
 var cur = null;
-var activeFilter = 'all';
 var userName = '';
 var saveTimer = null;
 
@@ -162,41 +149,17 @@ function fmtDateTime(d) {
 // ── Data ──────────────────────────────────────────────────
 async function loadReports() {
   try {
-    var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?deleted_at=is.null&select=*&order=updated_at.desc&limit=500', { headers: HEADERS });
+    var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?deleted_at=is.null&select=*&order=report_date.desc.nullsfirst,created_at.desc&limit=500', { headers: HEADERS });
     if (res.ok) reports = await res.json();
   } catch (e) {}
-  buildStatusTabs();
   renderList();
 }
 
-// ── Status tabs ───────────────────────────────────────────
-function buildStatusTabs() {
-  var counts = {};
-  STATUSES.forEach(function(s) { counts[s] = 0; });
-  reports.forEach(function(r) { counts[r.status] = (counts[r.status]||0) + 1; counts.all++; });
-  var el = document.getElementById('statusTabs');
-  el.innerHTML = STATUSES.map(function(s) {
-    return '<button class="ftab' + (activeFilter===s?' active':'') + '" onclick="setFilter(\'' + s + '\')">' + STATUS_LABELS[s] + ' (' + (counts[s]||0) + ')</button>';
-  }).join('');
-}
-
-function setFilter(f) { activeFilter = f; buildStatusTabs(); renderList(); }
-
 // ── Sidebar list ──────────────────────────────────────────
 function renderList() {
-  var q = (document.getElementById('search').value || '').toLowerCase().trim();
-  var filtered = reports.filter(function(r) {
-    if (activeFilter !== 'all' && r.status !== activeFilter) return false;
-    if (!q) return true;
-    return (r.cable_id||'').toLowerCase().indexOf(q) > -1 ||
-           (r.reporter_name||'').toLowerCase().indexOf(q) > -1 ||
-           (r.damage_type||'').toLowerCase().indexOf(q) > -1 ||
-           (r.location||'').toLowerCase().indexOf(q) > -1 ||
-           (r.description||'').toLowerCase().indexOf(q) > -1;
-  });
-  document.getElementById('listCount').textContent = filtered.length + ' of ' + reports.length + ' reports';
+  document.getElementById('listCount').textContent = reports.length + ' report' + (reports.length === 1 ? '' : 's');
   var list = document.getElementById('reportList');
-  list.innerHTML = filtered.map(function(r) {
+  list.innerHTML = reports.map(function(r) {
     return '<div class="report-item' + (cur && cur.id===r.id ? ' active' : '') + '" onclick="selectReport(\'' + r.id + '\')">' +
       '<div class="ri-top"><span class="ri-id">' + esc(r.cable_id || 'No Cable ID') + '</span><span class="ri-status ' + r.status + '">' + (STATUS_LABELS[r.status]||r.status) + '</span></div>' +
       '<div class="ri-meta">' + esc(r.damage_type||'—') + ' · ' + fmtDate(r.report_date) + '</div>' +
@@ -285,7 +248,6 @@ function advance(next) {
   cur.status = next;
   save();
   renderDetail();
-  buildStatusTabs();
   renderList();
 }
 

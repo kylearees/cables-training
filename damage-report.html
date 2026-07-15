@@ -150,8 +150,7 @@ let userName = '', userPayroll = '';
   try {
     const { ok, data } = await authFetch('/auth/me', { method: 'GET' });
     if (!ok || !data) { window.location.replace('signin.html'); return; }
-    const p = data.permissions || {};
-    if (!(p.superadmin || p.admin || (p.cables && p.cables.access))) { window.location.replace('signin.html'); return; }
+    if (!data.payroll) { window.location.replace('signin.html'); return; }
     userName = data.name || '';
     userPayroll = String(data.payroll || '');
     await loadReports();
@@ -338,21 +337,24 @@ function renderWorkflowBtns() {
   const s = cur.status;
   let btns = '';
   if (s === 'draft')     btns = `<button class="wf-btn primary" onclick="advanceStatus('reported')">Submit Report</button>`;
-  if (s === 'reported')  btns = `<button class="wf-btn primary" onclick="advanceStatus('repaired')">Mark Repaired</button>`;
-  if (s === 'repaired')  btns = `<button class="wf-btn primary" onclick="advanceStatus('closed')">Close Report</button>`;
-  if (s !== 'closed')    btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
+  btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
   w.innerHTML = btns;
 }
 
-function advanceStatus(next) {
+async function advanceStatus(next) {
   if (!cur) return;
-  if (next === 'closed') {
-    cur.closed_by = userName;
-    cur.closed_date = new Date().toISOString().slice(0,10);
-  }
   cur.status = next;
   scheduleSave();
   renderForm();
+  if (next === 'reported') {
+    try {
+      await fetch(SB_URL + '/functions/v1/notify-cable-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SB_KEY },
+        body: JSON.stringify({ report_id: cur.id, cable_id: cur.cable_id, damage_type: cur.damage_type, location: cur.location, reporter_name: cur.reporter_name, report_date: cur.report_date, description: cur.description })
+      });
+    } catch (e) {}
+  }
 }
 
 function upd(field, val) {
