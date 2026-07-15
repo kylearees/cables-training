@@ -40,7 +40,6 @@
     .ri-status.reported { background:rgba(245,166,35,.15); color:var(--accent); }
     .ri-status.inspected { background:rgba(59,130,246,.15); color:#3b82f6; }
     .ri-status.repaired { background:rgba(34,197,94,.15); color:var(--green); }
-    .ri-status.closed { background:rgba(168,180,204,.1); color:var(--muted); }
     .ri-meta { font-size:13px; color:var(--muted); }
     .ri-reporter { font-size:12px; color:var(--muted); margin-top:2px; }
 
@@ -119,8 +118,8 @@ var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
 var AUTH_BASE = 'https://www.kennecotttrainers.com';
 var TOKEN = localStorage.getItem('kt_token') || '';
 
-var STATUSES = ['all','reported','repaired','closed','draft'];
-var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported', repaired:'Repaired', closed:'Closed' };
+var STATUSES = ['all','reported','draft'];
+var STATUS_LABELS = { all:'All', draft:'Draft', reported:'Reported' };
 
 var reports = [];
 var cur = null;
@@ -248,9 +247,8 @@ function renderDetail() {
   html += '</div>';
 
   // Repair
-  var canEditRepair = ['reported','repaired'].indexOf(r.status) > -1;
   html += '<div class="detail-card"><div class="detail-title">Repair</div><div class="detail-grid">';
-  if (canEditRepair) {
+  if (r.status === 'reported') {
     html += editField('Repaired By', 'repair_name', r.repair_name) +
             editField('Repair Date', 'repair_date', r.repair_date, 'date') +
             '<div class="detail-field full"><label>Repair Notes</label><textarea oninput="upd(\'repair_notes\',this.value)">' + esc(r.repair_notes||'') + '</textarea></div>';
@@ -259,14 +257,6 @@ function renderDetail() {
             field('Repair Notes', r.repair_notes, true);
   }
   html += '</div></div>';
-
-  // Closure
-  if (r.status === 'closed') {
-    html += '<div class="detail-card"><div class="detail-title">Closure</div><div class="detail-grid">' +
-      field('Closed By', r.closed_by) + field('Closed Date', fmtDate(r.closed_date)) +
-      field('Closure Notes', r.closed_notes, true) +
-      '</div></div>';
-  }
 
   m.innerHTML = html;
   renderWorkflowBtns();
@@ -287,16 +277,11 @@ function renderWorkflowBtns() {
   var s = cur.status;
   var btns = '';
   if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
-  if (s === 'repaired')  btns += '<button class="wf-btn primary" onclick="advance(\'closed\')">Close Report</button>';
   w.innerHTML = btns;
 }
 
 function advance(next) {
   if (!cur) return;
-  if (next === 'closed') {
-    cur.closed_by = userName;
-    cur.closed_date = new Date().toISOString().slice(0,10);
-  }
   cur.status = next;
   save();
   renderDetail();
