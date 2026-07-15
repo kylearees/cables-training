@@ -181,8 +181,8 @@ function blankReport() {
   const today = new Date().toISOString().slice(0,10);
   const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('dr'+Date.now()+Math.random().toString(16).slice(2));
   return {
-    id, status:'draft', reporter_name:userName, reporter_payroll:userPayroll,
-    report_date:today, cable_id:'', damage_type:'', location:'', location_detail:'',
+    id, status:'draft', reporter_name:userName, reporter_payroll:userPayroll, contact_phone:'',
+    report_date:today, occurrence_datetime:'', cable_id:'', damage_type:'', location:'',
     description:'', cause:'', immediate_action:'', photos:[], notes:'',
     inspector_name:'', inspect_date:'', inspect_notes:'',
     repair_name:'', repair_date:'', repair_notes:'',
@@ -245,6 +245,24 @@ function renderForm() {
     <div id="saveStatus" class="save-status"></div>
 
     <div class="form-card">
+      <div class="form-title">Reporter Information</div>
+      <div class="form-grid three">
+        <div class="form-field">
+          <label>Name</label>
+          <input value="${esc(r.reporter_name)}" disabled>
+        </div>
+        <div class="form-field">
+          <label>Payroll #</label>
+          <input value="${esc(r.reporter_payroll)}" disabled>
+        </div>
+        <div class="form-field">
+          <label>Contact Phone</label>
+          <input id="f-phone" type="tel" value="${esc(r.contact_phone)}" placeholder="Phone number" ${dis} oninput="upd('contact_phone',this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
       <div class="form-title">Report Details</div>
       <div class="form-grid">
         <div class="form-field">
@@ -256,22 +274,22 @@ function renderForm() {
           <input id="f-date" type="date" value="${esc(r.report_date)}" ${dis} onchange="upd('report_date',this.value)">
         </div>
         <div class="form-field">
+          <label>Date & Time Occurred</label>
+          <input id="f-occurred" type="datetime-local" value="${esc(r.occurrence_datetime)}" ${dis} onchange="upd('occurrence_datetime',this.value)">
+        </div>
+        <div class="form-field">
           <label>Damage Type</label>
           <select id="f-type" ${dis} onchange="upd('damage_type',this.value)">
             <option value="">— Select —</option>
             ${DAMAGE_TYPES.map(t => `<option value="${t}"${r.damage_type===t?' selected':''}>${t}</option>`).join('')}
           </select>
         </div>
-        <div class="form-field">
+        <div class="form-field full">
           <label>Location</label>
           <select id="f-loc" ${dis} onchange="upd('location',this.value)">
             <option value="">— Select —</option>
             ${LOCATIONS.map(l => `<option value="${l}"${r.location===l?' selected':''}>${l}</option>`).join('')}
           </select>
-        </div>
-        <div class="form-field full">
-          <label>Location Detail</label>
-          <input id="f-locdet" value="${esc(r.location_detail)}" placeholder="Bench, road name, specific area…" ${dis} oninput="upd('location_detail',this.value)">
         </div>
         <div class="form-field full">
           <label>Description of Damage</label>
@@ -290,16 +308,6 @@ function renderForm() {
         <label>Photos</label>
         <div class="photos" id="photoWrap"></div>
         ${isLocked ? '' : '<label class="addphoto">📷 Add photo<input type="file" accept="image/*" multiple onchange="addPhotos(this)"></label>'}
-      </div>
-      <div class="form-grid" style="margin-top:14px">
-        <div class="form-field">
-          <label>Reporter</label>
-          <input value="${esc(r.reporter_name)}" disabled>
-        </div>
-        <div class="form-field">
-          <label>Reporter Payroll</label>
-          <input value="${esc(r.reporter_payroll)}" disabled>
-        </div>
       </div>
     </div>`;
 
@@ -387,7 +395,7 @@ function scheduleSave() {
 async function pushCloud(r) {
   try {
     const payload = Object.assign({}, r);
-    ['report_date','inspect_date','repair_date','closed_date'].forEach(k => { if (payload[k] === '') payload[k] = null; });
+    ['report_date','inspect_date','repair_date','closed_date','occurrence_datetime'].forEach(k => { if (payload[k] === '') payload[k] = null; });
     const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports`, {
       method: 'POST',
       headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },

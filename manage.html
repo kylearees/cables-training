@@ -136,6 +136,12 @@ function fmtDate(d) {
   var dt = new Date(d); if (isNaN(dt)) return esc(d);
   return dt.toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' });
 }
+function fmtDateTime(d) {
+  if (!d) return '—';
+  var dt = new Date(d); if (isNaN(dt)) return esc(d);
+  return dt.toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' }) + ' ' +
+         dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
 
 // ── Auth ──────────────────────────────────────────────────
 (async function init() {
@@ -222,13 +228,18 @@ function renderDetail() {
     '<div class="workflow-btns" id="wfBtns"></div></div>';
   html += '<div id="saveStatus" class="save-status"></div>';
 
+  // Reporter info
+  html += '<div class="detail-card"><div class="detail-title">Reporter Information</div><div class="detail-grid">' +
+    field('Name', r.reporter_name) + field('Payroll #', r.reporter_payroll) + field('Contact Phone', r.contact_phone) +
+    '</div></div>';
+
   // Report details (read-only)
   html += '<div class="detail-card"><div class="detail-title">Report Details</div><div class="detail-grid">' +
-    field('Cable ID', r.cable_id) + field('Report Date', fmtDate(r.report_date)) + field('Damage Type', r.damage_type) +
-    field('Location', r.location) + field('Location Detail', r.location_detail, true) +
+    field('Cable ID', r.cable_id) + field('Report Date', fmtDate(r.report_date)) +
+    field('Date & Time Occurred', r.occurrence_datetime ? fmtDateTime(r.occurrence_datetime) : null) +
+    field('Damage Type', r.damage_type) + field('Location', r.location) +
     field('Description', r.description, true) + field('Probable Cause', r.cause, true) +
     field('Immediate Action', r.immediate_action, true) +
-    field('Reporter', r.reporter_name) + field('Reporter Payroll', r.reporter_payroll) +
     '</div>';
   if (r.photos && r.photos.length) {
     html += '<div class="detail-field full" style="margin-top:14px"><label>Photos (' + r.photos.length + ')</label><div class="photos">' +
@@ -321,7 +332,7 @@ async function save() {
   cur.updated_at = new Date().toISOString();
   try {
     var payload = Object.assign({}, cur);
-    ['report_date','inspect_date','repair_date','closed_date'].forEach(function(k) { if (payload[k] === '') payload[k] = null; });
+    ['report_date','inspect_date','repair_date','closed_date','occurrence_datetime'].forEach(function(k) { if (payload[k] === '') payload[k] = null; });
     var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?id=eq.' + cur.id, {
       method: 'PATCH',
       headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
