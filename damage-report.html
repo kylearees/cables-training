@@ -356,9 +356,10 @@ function scheduleSave() {
 async function pushCloud(r) {
   try {
     const payload = Object.assign({}, r);
-    delete payload.photos;
+    if (Array.isArray(payload.photos)) {
+      payload.photos = payload.photos.map(p => ({ url: p.url })).filter(p => p.url);
+    }
     Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
-    console.log('pushCloud payload:', JSON.stringify(payload).slice(0, 500));
     const res = await fetch(`${SB_URL}/rest/v1/cable_damage_reports`, {
       method: 'POST',
       headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
@@ -385,17 +386,19 @@ async function deleteReport() {
   renderForm();
 }
 
-// ── Photos (local dataURL, no cloud upload yet) ──────────
+// ── Photos (edge function upload, matches VOC pattern) ───
 function resizeImage(file, maxDim, quality) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = () => reject(new Error('File read failed'));
     reader.onload = () => {
       const img = new Image();
+      img.onerror = () => reject(new Error('Image decode failed'));
       img.onload = () => {
         let w = img.width, h = img.height;
         if (w > maxDim || h > maxDim) {
-          const ratio = Math.min(maxDim/w, maxDim/h);
-          w = Math.round(w*ratio); h = Math.round(h*ratio);
+          const ratio = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * ratio); h = Math.round(h * ratio);
         }
         const c = document.createElement('canvas'); c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
@@ -407,16 +410,32 @@ function resizeImage(file, maxDim, quality) {
   });
 }
 
+async function cableApi(payload) {
+  const res = await fetch(`${SB_URL}/functions/v1/cable-report`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'x-kt-token': TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  let data = null; try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error((data && data.error) || ('HTTP ' + res.status));
+  return data;
+}
+
 async function addPhotos(input) {
   if (!cur || cur.status === 'closed') { input.value = ''; return; }
   const files = [...input.files]; input.value = '';
   if (!cur.photos) cur.photos = [];
   for (const file of files) {
-    const origKB = Math.round(file.size / 1024);
-    const r = await resizeImage(file, 2048, 0.85);
-    if (!r) continue;
-    const newKB = Math.round((r.dataURL.length - (r.dataURL.indexOf(',') + 1)) * 0.75 / 1024);
-    cur.photos.push({ dataURL: r.dataURL, origKB, newKB, w: r.w, h: r.h });
+    setStatus('Uploading photo…');
+    try {
+      const r = await resizeImage(file, 2048, 0.85);
+      const up = await cableApi({ action: 'photo', report_id: cur.id, dataURL: r.dataURL });
+      cur.photos.push({ url: up.url, path: up.path });
+    } catch (e) {
+      console.error('Photo upload error:', e);
+      setStatus('Photo upload failed', true);
+      return;
+    }
   }
   renderPhotos();
   scheduleSave();
@@ -427,12 +446,14 @@ function renderPhotos() {
   if (!wrap || !cur) return;
   wrap.innerHTML = '';
   (cur.photos || []).forEach((p, i) => {
+    const src = p.url || '';
+    if (!src) return;
     const d = document.createElement('div'); d.className = 'thumb';
-    d.innerHTML = `<img src="${p.url||p.dataURL||''}">` +
+    d.innerHTML = `<img src="${src}">` +
       (cur.status !== 'closed' ? `<button class="rm" title="Remove">×</button>` : '');
     d.querySelector('img').onclick = () => {
       const lb = document.createElement('div'); lb.className = 'photo-lightbox';
-      lb.innerHTML = `<img src="${p.url||p.dataURL||''}">`;
+      lb.innerHTML = `<img src="${src}">`;
       lb.onclick = () => lb.remove();
       document.body.appendChild(lb);
     };
