@@ -240,6 +240,7 @@ function renderWorkflowBtns() {
   var s = cur.status;
   var btns = '';
   if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
+  btns += '<button class="wf-btn" onclick="printReport()">Print / PDF</button>';
   w.innerHTML = btns;
 }
 
@@ -285,6 +286,73 @@ function lightbox(src) {
   lb.innerHTML = '<img src="' + src + '">';
   lb.onclick = function() { lb.remove(); };
   document.body.appendChild(lb);
+}
+
+function printReport() {
+  if (!cur) return;
+  var r = cur;
+  var row = function(lbl, val) { return '<tr><td class="lbl">' + esc(lbl) + '</td><td>' + esc(val || '—') + '</td></tr>'; };
+  var section = function(title) { return '<tr><td colspan="2" class="sec">' + esc(title) + '</td></tr>'; };
+
+  var rows = '';
+  rows += section('Reporter Information');
+  rows += row('Name', r.reporter_name);
+  rows += row('Payroll #', r.reporter_payroll);
+  rows += row('Contact Phone', r.contact_phone);
+
+  rows += section('Report Details');
+  rows += row('Cable ID', r.cable_id);
+  rows += row('Report Date', fmtDate(r.report_date));
+  rows += row('Date & Time Occurred', r.occurrence_datetime ? fmtDateTime(r.occurrence_datetime) : null);
+  rows += row('Damage Type', r.damage_type);
+  rows += row('Equipment Type', r.location);
+  rows += row('Equipment Number', r.equipment_number);
+  rows += row('Description', r.description);
+
+  rows += section('Repair');
+  rows += row('Status', STATUS_LABELS[r.status] || r.status);
+  rows += row('Repaired By', r.repair_name);
+  rows += row('Repair Date', fmtDate(r.repair_date));
+  rows += row('Repair Notes', r.repair_notes);
+
+  var photos = '';
+  if (r.photos && r.photos.length) {
+    photos = '<div class="photo-section"><div class="sec-inline">Photos</div><div class="photo-grid">';
+    r.photos.forEach(function(p) {
+      var src = p.url || p.dataURL || '';
+      if (src) photos += '<img src="' + src + '">';
+    });
+    photos += '</div></div>';
+  }
+
+  var title = 'Cable Damage Report' + (r.cable_id ? ' — ' + r.cable_id : '');
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + esc(title) + '</title>' +
+    '<style>' +
+    'body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 32px 40px; color: #1a1a1a; font-size: 13px; }' +
+    '.header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #f5a623; padding-bottom: 12px; margin-bottom: 20px; }' +
+    '.header .kicker { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #f5a623; font-weight: 700; margin-bottom: 2px; }' +
+    '.header h1 { font-size: 22px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: .5px; }' +
+    '.header .meta { text-align: right; font-size: 11px; color: #666; }' +
+    'table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }' +
+    'td { padding: 5px 10px; vertical-align: top; border-bottom: 1px solid #e5e5e5; }' +
+    '.lbl { width: 160px; font-weight: 700; color: #555; text-transform: uppercase; font-size: 11px; letter-spacing: .5px; }' +
+    '.sec { font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #f5a623; padding-top: 16px; border-bottom: 2px solid #f5a623; }' +
+    '.photo-section { margin-top: 16px; }' +
+    '.sec-inline { font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #f5a623; border-bottom: 2px solid #f5a623; padding-bottom: 4px; margin-bottom: 10px; }' +
+    '.photo-grid { display: flex; flex-wrap: wrap; gap: 10px; }' +
+    '.photo-grid img { width: 220px; height: 165px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }' +
+    '@media print { body { padding: 20px; } .photo-grid img { break-inside: avoid; } }' +
+    '</style></head><body>' +
+    '<div class="header"><div><div class="kicker">Kennecott Mine · Cables Training</div><h1>Cable Damage Report</h1></div>' +
+    '<div class="meta">Cable ID: <strong>' + esc(r.cable_id || '—') + '</strong><br>Printed: ' + new Date().toLocaleDateString('en-US') + '</div></div>' +
+    '<table>' + rows + '</table>' +
+    photos +
+    '</body></html>';
+
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.onload = function() { w.print(); };
 }
 </script>
 </body>
