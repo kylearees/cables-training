@@ -232,7 +232,7 @@ function renderForm() {
     return;
   }
   const r = cur;
-  const isLocked = r.status === 'closed';
+  const isLocked = r.status !== 'draft';
   const dis = isLocked ? 'disabled' : '';
 
   let html = `
@@ -306,6 +306,16 @@ function renderForm() {
       </div>
     </div>`;
 
+  if (!isLocked) {
+    html += `<div style="text-align:center;margin-top:8px">
+      <button class="wf-btn primary" style="padding:14px 32px;font-size:15px" onclick="advanceStatus('reported')">Complete and File</button>
+    </div>`;
+  } else {
+    html += `<div style="text-align:center;padding:16px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px;text-transform:uppercase">
+      This report has been filed and is read-only
+    </div>`;
+  }
+
   m.innerHTML = html;
   renderPhotos();
   renderWorkflowBtns();
@@ -316,8 +326,7 @@ function renderWorkflowBtns() {
   if (!w || !cur) return;
   const s = cur.status;
   let btns = '';
-  if (s === 'draft')     btns = `<button class="wf-btn primary" onclick="advanceStatus('reported')">Submit Report</button>`;
-  btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
+  if (s === 'draft') btns += `<button class="wf-btn danger" onclick="deleteReport()">Delete</button>`;
   w.innerHTML = btns;
 }
 

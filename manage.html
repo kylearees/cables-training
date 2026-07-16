@@ -239,6 +239,7 @@ function renderWorkflowBtns() {
   if (!w || !cur) return;
   var s = cur.status;
   var btns = '';
+  btns += '<button class="wf-btn" onclick="advance(\'draft\')">Reopen for Edits</button>';
   if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
   btns += '<button class="wf-btn" onclick="printReport()">Print / PDF</button>';
   w.innerHTML = btns;
