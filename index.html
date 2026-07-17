@@ -6,6 +6,7 @@
   <title>Cables Training</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/header.css">
+  <script src="/icons.js"></script>
   <script src="/header.js" defer></script>
   <link rel="icon" type="image/png" href="/favicon.png">
   <meta name="theme-color" content="#f5a623">
@@ -25,7 +26,8 @@
     .tile:active { transform:scale(.99); }
     .tile.soon { opacity:.5; cursor:default; }
     .tile.soon:hover { border-color:var(--border); }
-    .tile-icon { font-size:34px; flex-shrink:0; }
+    .tile-icon { width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(245,166,35,.13); color:var(--accent); flex-shrink:0; }
+    .tile-icon svg { width:24px; height:24px; }
     .tile-label { font-family:'Barlow Condensed',sans-serif; font-size:21px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
     .tile-sub { font-size:14px; color:var(--muted); margin-top:4px; }
   </style>
@@ -40,7 +42,7 @@
   <div class="section-label">Training</div>
   <div class="tiles">
     <a class="tile" href="training.html">
-      <div class="tile-icon">📖</div>
+      <div class="tile-icon"><span data-icon="book"></span></div>
       <div>
         <div class="tile-label">Training Material</div>
         <div class="tile-sub">Cable handling procedures</div>
@@ -51,14 +53,14 @@
   <div class="section-label">Reporting</div>
   <div class="tiles">
     <a class="tile" href="damage-report.html">
-      <div class="tile-icon">⚡</div>
+      <div class="tile-icon"><span data-icon="bolt"></span></div>
       <div>
         <div class="tile-label">Damage Reports</div>
         <div class="tile-sub">Log &amp; track cable damage</div>
       </div>
     </a>
     <a class="tile" id="manageTile" href="manage.html" style="display:none">
-      <div class="tile-icon">🛠️</div>
+      <div class="tile-icon"><span data-icon="tool"></span></div>
       <div>
         <div class="tile-label">Management</div>
         <div class="tile-sub">All reports &amp; analytics</div>
