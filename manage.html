@@ -242,6 +242,7 @@ function renderWorkflowBtns() {
   btns += '<button class="wf-btn" onclick="advance(\'draft\')">Reopen for Edits</button>';
   if (s === 'reported')  btns += '<button class="wf-btn primary" onclick="advance(\'repaired\')">Mark Repaired</button>';
   btns += '<button class="wf-btn" onclick="printReport()">Print / PDF</button>';
+  btns += '<button class="wf-btn" style="color:var(--error);border-color:var(--error)" onclick="deleteReport()">Delete</button>';
   w.innerHTML = btns;
 }
 
@@ -354,6 +355,25 @@ function printReport() {
   w.document.write(html);
   w.document.close();
   w.onload = function() { w.print(); };
+}
+
+async function deleteReport() {
+  if (!cur) return;
+  var label = cur.cable_id || 'this report';
+  if (!confirm('Delete "' + label + '"?\n\nThis can be recovered from the admin Deleted Records page.')) return;
+  try {
+    var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?id=eq.' + cur.id, {
+      method: 'PATCH',
+      headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+      body: JSON.stringify({ deleted_at: new Date().toISOString() })
+    });
+    if (res.ok) {
+      reports = reports.filter(function(r) { return r.id !== cur.id; });
+      cur = null;
+      renderList();
+      renderDetail();
+    } else { alert('Delete failed — try again.'); }
+  } catch (e) { alert('Network error — check connection.'); }
 }
 </script>
 </body>
