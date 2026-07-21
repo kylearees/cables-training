@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Damage Reports — Cables Training</title>
+  <title>Management — Cables Training</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/header.css">
   <script src="/header.js" defer></script>
@@ -17,7 +17,23 @@
     .badge { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:3px; }
     header h1 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
 
-    .layout { display:flex; height:calc(100vh - 56px); overflow:hidden; }
+    /* ── Hub tiles ──────────────────────────────────────── */
+    .hub { max-width:860px; margin:0 auto; padding:36px 18px; }
+    .hub-tiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .hub-tile { display:flex; align-items:center; gap:18px; background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:28px 24px; text-decoration:none; color:var(--text); cursor:pointer; transition:border-color .15s, transform .1s; }
+    .hub-tile:hover { border-color:var(--accent); }
+    .hub-tile:active { transform:scale(.99); }
+    .hub-icon { font-size:38px; flex-shrink:0; }
+    .hub-label { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:1px; text-transform:uppercase; line-height:1; }
+    .hub-sub { font-size:14px; color:var(--muted); margin-top:5px; }
+
+    /* ── Back bar ───────────────────────────────────────── */
+    .back-bar { padding:10px 18px; background:var(--surface); border-bottom:1px solid var(--border); }
+    .back-btn { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); background:none; border:none; cursor:pointer; padding:4px 0; }
+    .back-btn:hover { color:var(--accent); }
+
+    /* ── Report list + detail ──────────────────────────── */
+    .layout { display:flex; height:calc(100vh - 56px - 39px); overflow:hidden; }
     .sidebar { width:320px; min-width:260px; background:var(--surface); border-right:1.5px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
     .sidebar-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
     .sidebar-head h2 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
@@ -70,6 +86,48 @@
     .save-status { font-size:13px; color:var(--muted); padding:4px 0; margin-bottom:12px; }
     .save-status.err { color:var(--error); }
 
+    /* ── Costs view ────────────────────────────────────── */
+    .costs-wrap { max-width:900px; margin:0 auto; padding:28px 18px; }
+    .costs-total { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:24px 28px; margin-bottom:24px; display:flex; align-items:center; gap:20px; }
+    .costs-total .year-label { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+    .costs-total .year-val { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:800; color:var(--accent); letter-spacing:1px; }
+    .costs-total .year-count { font-size:14px; color:var(--muted); margin-left:auto; }
+    .costs-table { width:100%; border-collapse:collapse; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; overflow:hidden; }
+    .costs-table th { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); text-align:left; padding:12px 14px; border-bottom:2px solid var(--border); background:var(--card); }
+    .costs-table td { padding:10px 14px; font-size:14px; border-bottom:1px solid var(--border); }
+    .costs-table tr:last-child td { border-bottom:none; }
+    .costs-table tr:hover td { background:var(--card); }
+    .cost-val { font-weight:600; }
+    .cost-none { color:var(--muted); font-style:italic; }
+
+    /* ── Personnel view ────────────────────────────────── */
+    .personnel-wrap { max-width:900px; margin:0 auto; padding:28px 18px; }
+    .add-bar { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:24px; }
+    .add-bar label { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:2px; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:10px; }
+    .add-bar .search-row { display:flex; gap:10px; position:relative; }
+    .add-bar input { flex:1; background:var(--card); border:1.5px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:15px; padding:10px 14px; outline:none; }
+    .add-bar input:focus { border-color:var(--accent); }
+    .search-results { position:absolute; top:100%; left:0; right:80px; background:var(--card); border:1.5px solid var(--border); border-radius:0 0 8px 8px; max-height:240px; overflow-y:auto; z-index:100; }
+    .search-results:empty { display:none; }
+    .sr-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+    .sr-item:hover { background:var(--surface); }
+    .sr-item:last-child { border-bottom:none; }
+    .sr-name { font-weight:600; }
+    .sr-detail { font-size:12px; color:var(--muted); }
+    .sr-already { font-size:11px; color:var(--green); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+    .roster-table { width:100%; border-collapse:collapse; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; overflow:hidden; }
+    .roster-table th { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); text-align:left; padding:12px 14px; border-bottom:2px solid var(--border); background:var(--card); }
+    .roster-table td { padding:10px 14px; font-size:14px; border-bottom:1px solid var(--border); }
+    .roster-table tr:last-child td { border-bottom:none; }
+    .roster-table tr:hover td { background:var(--card); }
+    .roster-count { font-size:14px; color:var(--muted); margin-bottom:12px; }
+    .remove-btn { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--error); background:none; border:1.5px solid var(--error); border-radius:4px; padding:4px 10px; cursor:pointer; opacity:.7; }
+    .remove-btn:hover { opacity:1; }
+
+    .view { display:none; }
+    .view.active { display:block; }
+    .view-reports.active { display:flex; }
+
     @media (max-width:700px) {
       .layout { flex-direction:column; height:auto; }
       .sidebar { width:100%; max-height:40vh; border-right:none; border-bottom:1.5px solid var(--border); }
@@ -81,23 +139,78 @@
 <body>
 <header>
   <div class="badge">Kennecott Mine · Cables Training</div>
-  <h1>Damage Reports</h1>
+  <h1>Management</h1>
 </header>
 
-<div class="layout">
-  <div class="sidebar">
-    <div class="sidebar-head">
-      <h2>Damage Reports</h2>
-      <div class="count" id="listCount"></div>
+<!-- Hub (default) -->
+<div class="view active" id="viewHub">
+  <div class="hub">
+    <div class="hub-tiles">
+      <div class="hub-tile" onclick="showView('reports')">
+        <div class="hub-icon">⚡</div>
+        <div>
+          <div class="hub-label">Damage Reports</div>
+          <div class="hub-sub">View, manage &amp; track cable damage</div>
+        </div>
+      </div>
+      <div class="hub-tile" onclick="showView('costs')">
+        <div class="hub-icon">💰</div>
+        <div>
+          <div class="hub-label">Repair Costs</div>
+          <div class="hub-sub">Cost summary &amp; year-to-date total</div>
+        </div>
+      </div>
+      <div class="hub-tile" onclick="showView('personnel')">
+        <div class="hub-icon">👷</div>
+        <div>
+          <div class="hub-label">Personnel</div>
+          <div class="hub-sub">Manage cable operator access</div>
+        </div>
+      </div>
     </div>
-    <div class="report-list" id="reportList"></div>
   </div>
-  <div class="main" id="main">
-    <div class="empty-state">
-      <div class="icon">🛠️</div>
-      <div class="msg">Select a damage report</div>
+</div>
+
+<!-- Reports view -->
+<div class="view view-reports" id="viewReports">
+  <div class="back-bar"><button class="back-btn" onclick="showView('hub')">&larr; Back to Management</button></div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-head">
+        <h2>Damage Reports</h2>
+        <div class="count" id="listCount"></div>
+      </div>
+      <div class="report-list" id="reportList"></div>
+    </div>
+    <div class="main" id="main">
+      <div class="empty-state">
+        <div class="icon">🛠️</div>
+        <div class="msg">Select a damage report</div>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- Personnel view -->
+<div class="view" id="viewPersonnel">
+  <div class="back-bar"><button class="back-btn" onclick="showView('hub')">&larr; Back to Management</button></div>
+  <div class="personnel-wrap">
+    <div class="add-bar">
+      <label>Add Cable Operator</label>
+      <div class="search-row">
+        <input type="text" id="personnelSearch" placeholder="Search by name or payroll number…" oninput="searchEmployees(this.value)" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="roster-count" id="rosterCount"></div>
+    <div id="rosterBody"></div>
+  </div>
+</div>
+
+<!-- Costs view -->
+<div class="view" id="viewCosts">
+  <div class="back-bar"><button class="back-btn" onclick="showView('hub')">&larr; Back to Management</button></div>
+  <div class="costs-wrap" id="costsBody"></div>
 </div>
 
 <script>
@@ -128,8 +241,22 @@ function fmtDateTime(d) {
   return dt.toLocaleDateString('en-US', { month:'numeric', day:'numeric', year:'numeric' }) + ' ' +
          dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
 }
+function fmtMoney(v) {
+  var n = parseFloat(v);
+  if (isNaN(n)) return null;
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
 
-// ── Auth ──────────────────────────────────────────────────
+// ── Views ──────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('active'); });
+  var el = document.getElementById('view' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (el) el.classList.add('active');
+  if (name === 'costs') renderCosts();
+  if (name === 'personnel') loadRoster();
+}
+
+// ── Auth ──────────────────────────────────────────────
 (async function init() {
   if (!TOKEN) { window.location.replace('signin.html'); return; }
   try {
@@ -146,7 +273,7 @@ function fmtDateTime(d) {
   }
 })();
 
-// ── Data ──────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────
 async function loadReports() {
   try {
     var res = await fetch(SB_URL + '/rest/v1/cable_damage_reports?deleted_at=is.null&select=*&order=report_date.desc.nullsfirst,created_at.desc&limit=500', { headers: HEADERS });
@@ -155,7 +282,7 @@ async function loadReports() {
   renderList();
 }
 
-// ── Sidebar list ──────────────────────────────────────────
+// ── Sidebar list ──────────────────────────────────────
 function renderList() {
   document.getElementById('listCount').textContent = reports.length + ' report' + (reports.length === 1 ? '' : 's');
   var list = document.getElementById('reportList');
@@ -174,7 +301,7 @@ function selectReport(id) {
   renderDetail();
 }
 
-// ── Detail view ───────────────────────────────────────────
+// ── Detail view ───────────────────────────────────────
 function renderDetail() {
   var m = document.getElementById('main');
   if (!cur) {
@@ -212,12 +339,13 @@ function renderDetail() {
   // Repair
   html += '<div class="detail-card"><div class="detail-title">Repair</div><div class="detail-grid">';
   if (r.status === 'reported') {
-    html += editField('Repaired By', 'repair_name', r.repair_name) +
+    html += editField('Estimated Cost', 'estimated_cost', r.estimated_cost) +
+            editField('PO #', 'po_number', r.po_number) +
             editField('Repair Date', 'repair_date', r.repair_date, 'date') +
             '<div class="detail-field full"><label>Repair Notes</label><textarea oninput="upd(\'repair_notes\',this.value)">' + esc(r.repair_notes||'') + '</textarea></div>';
   } else {
-    html += field('Repaired By', r.repair_name) + field('Repair Date', fmtDate(r.repair_date)) +
-            field('Repair Notes', r.repair_notes, true);
+    html += field('Estimated Cost', r.estimated_cost) + field('PO #', r.po_number) +
+            field('Repair Date', fmtDate(r.repair_date)) + field('Repair Notes', r.repair_notes, true);
   }
   html += '</div></div>';
 
@@ -290,6 +418,149 @@ function lightbox(src) {
   document.body.appendChild(lb);
 }
 
+// ── Costs view ────────────────────────────────────────
+function renderCosts() {
+  var body = document.getElementById('costsBody');
+  var year = new Date().getFullYear();
+  var yearReports = reports.filter(function(r) {
+    var d = r.report_date || r.created_at || '';
+    return String(d).slice(0,4) === String(year);
+  });
+
+  var total = 0;
+  var countWithCost = 0;
+  yearReports.forEach(function(r) {
+    var n = parseFloat(r.estimated_cost);
+    if (!isNaN(n)) { total += n; countWithCost++; }
+  });
+
+  var html = '';
+  html += '<div class="costs-total">' +
+    '<div><div class="year-label">' + year + ' Year-to-Date Total</div>' +
+    '<div class="year-val">' + fmtMoney(total) + '</div></div>' +
+    '<div class="year-count">' + countWithCost + ' of ' + yearReports.length + ' reports with costs</div>' +
+    '</div>';
+
+  html += '<table class="costs-table"><thead><tr>' +
+    '<th>Cable ID</th><th>Date</th><th>Damage Type</th><th>Equipment</th><th>Estimated Cost</th><th>PO #</th><th>Status</th>' +
+    '</tr></thead><tbody>';
+
+  yearReports.forEach(function(r) {
+    var cost = fmtMoney(r.estimated_cost);
+    html += '<tr>' +
+      '<td style="font-weight:700">' + esc(r.cable_id || '—') + '</td>' +
+      '<td>' + fmtDate(r.report_date) + '</td>' +
+      '<td>' + esc(r.damage_type || '—') + '</td>' +
+      '<td>' + esc([r.location, r.equipment_number].filter(Boolean).join(' — ') || '—') + '</td>' +
+      '<td class="' + (cost ? 'cost-val' : 'cost-none') + '">' + (cost || 'Not entered') + '</td>' +
+      '<td>' + esc(r.po_number || '—') + '</td>' +
+      '<td><span class="ri-status ' + r.status + '">' + (STATUS_LABELS[r.status]||r.status) + '</span></td>' +
+      '</tr>';
+  });
+
+  if (!yearReports.length) {
+    html += '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No reports for ' + year + '</td></tr>';
+  }
+
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+
+// ── Personnel view ─────────────────────────────────────
+var roster = [];
+var searchTimer = null;
+
+async function loadRoster() {
+  try {
+    var res = await fetch(SB_URL + '/rest/v1/kw_users?permissions-%3Ecables-%3E%3Eaccess=eq.true&select=display_name,payroll,business_title,site,team&order=display_name.asc&limit=500', { headers: HEADERS });
+    if (res.ok) roster = await res.json();
+  } catch (e) {}
+  renderRoster();
+}
+
+function renderRoster() {
+  document.getElementById('rosterCount').textContent = roster.length + ' cable operator' + (roster.length === 1 ? '' : 's');
+  var html = '<table class="roster-table"><thead><tr><th>Name</th><th>Payroll</th><th>Title</th><th>Site</th><th>Team</th><th></th></tr></thead><tbody>';
+  roster.forEach(function(u) {
+    html += '<tr>' +
+      '<td style="font-weight:700">' + esc(u.display_name || '—') + '</td>' +
+      '<td>' + esc(u.payroll || '—') + '</td>' +
+      '<td>' + esc(u.business_title || '—') + '</td>' +
+      '<td>' + esc(u.site || '—') + '</td>' +
+      '<td>' + esc(u.team || '—') + '</td>' +
+      '<td style="text-align:right"><button class="remove-btn" onclick="revokeAccess(\'' + esc(u.payroll) + '\',\'' + esc(u.display_name).replace(/'/g,"\\'") + '\')">Remove</button></td>' +
+      '</tr>';
+  });
+  if (!roster.length) html += '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No cable operators added yet</td></tr>';
+  html += '</tbody></table>';
+  document.getElementById('rosterBody').innerHTML = html;
+}
+
+function searchEmployees(q) {
+  clearTimeout(searchTimer);
+  q = q.trim();
+  var box = document.getElementById('searchResults');
+  if (q.length < 2) { box.innerHTML = ''; return; }
+  searchTimer = setTimeout(async function() {
+    try {
+      var isNum = /^\d+$/.test(q);
+      var url;
+      if (isNum) {
+        url = SB_URL + '/rest/v1/kw_users?payroll=eq.' + encodeURIComponent(q) + '&select=display_name,payroll,business_title,permissions&limit=10';
+      } else {
+        url = SB_URL + '/rest/v1/kw_users?display_name=ilike.*' + encodeURIComponent(q) + '*&select=display_name,payroll,business_title,permissions&order=display_name.asc&limit=10';
+      }
+      var res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) return;
+      var rows = await res.json();
+      box.innerHTML = rows.map(function(u) {
+        var hasCables = u.permissions && u.permissions.cables && u.permissions.cables.access;
+        return '<div class="sr-item" onclick="grantAccess(\'' + esc(u.payroll) + '\')">' +
+          '<div><span class="sr-name">' + esc(u.display_name) + '</span> <span class="sr-detail">' + esc(u.payroll) + '</span>' +
+          (u.business_title ? '<br><span class="sr-detail">' + esc(u.business_title) + '</span>' : '') +
+          '</div>' +
+          (hasCables ? '<span class="sr-already">Already added</span>' : '') +
+          '</div>';
+      }).join('');
+      if (!rows.length) box.innerHTML = '<div class="sr-item" style="color:var(--muted)">No employees found</div>';
+    } catch (e) {}
+  }, 300);
+}
+
+document.addEventListener('click', function(e) {
+  var box = document.getElementById('searchResults');
+  if (box && !e.target.closest('.search-row')) box.innerHTML = '';
+});
+
+async function grantAccess(payroll) {
+  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('personnelSearch').value = '';
+  try {
+    var res = await fetch(AUTH_BASE + '/auth/cables-grant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+      body: JSON.stringify({ payroll: payroll, access: true })
+    });
+    var data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to grant access'); return; }
+    await loadRoster();
+  } catch (e) { alert('Network error'); }
+}
+
+async function revokeAccess(payroll, name) {
+  if (!confirm('Remove cables access for ' + name + '?')) return;
+  try {
+    var res = await fetch(AUTH_BASE + '/auth/cables-grant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+      body: JSON.stringify({ payroll: payroll, access: false })
+    });
+    var data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to revoke access'); return; }
+    await loadRoster();
+  } catch (e) { alert('Network error'); }
+}
+
 function printReport() {
   if (!cur) return;
   var r = cur;
@@ -313,7 +584,8 @@ function printReport() {
 
   rows += section('Repair');
   rows += row('Status', STATUS_LABELS[r.status] || r.status);
-  rows += row('Repaired By', r.repair_name);
+  rows += row('Estimated Cost', r.estimated_cost);
+  rows += row('PO #', r.po_number);
   rows += row('Repair Date', fmtDate(r.repair_date));
   rows += row('Repair Notes', r.repair_notes);
 
