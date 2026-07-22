@@ -479,7 +479,7 @@ async function loadRoster() {
 }
 
 function renderRoster() {
-  document.getElementById('rosterCount').textContent = roster.length + ' cable operator' + (roster.length === 1 ? '' : 's');
+  document.getElementById('rosterCount').textContent = roster.length + ' Employee' + (roster.length === 1 ? '' : 's') + ' can access the Cable Pages';
   var html = '<table class="roster-table"><thead><tr><th>Name</th><th>Payroll</th><th>Title</th><th>Site</th><th>Team</th><th></th></tr></thead><tbody>';
   roster.forEach(function(u) {
     html += '<tr>' +

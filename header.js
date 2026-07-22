@@ -56,7 +56,8 @@
     var h = p.haulage || {};
     if (h.access && Array.isArray(h.caps) && h.caps.indexOf('team_management') > -1) return 'Team Trainer';
     if (h.access && Array.isArray(h.caps) && h.caps.indexOf('mentoring') > -1 && (!Array.isArray(h.teams) || h.teams.length === 0)) return 'Mentor';
-    if (h.access || (p.shovels && p.shovels.access) || (p.cables && p.cables.access)) return 'Trainer';
+    var sh = p.shovels || {}, cb = p.cables || {};
+    if (h.access || sh.manage || sh.voc || sh.outline || sh.final || cb.manage) return 'Trainer';
     return '';
   }
   function initials(name) {
